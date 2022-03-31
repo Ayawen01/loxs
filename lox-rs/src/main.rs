@@ -27,6 +27,7 @@ fn run(source: Vec<u8>) {
             panic!()
         }
     };
+    tokens.iter().for_each(|token| println!("{:?}", token));
 }
 
 fn run_file(path: &str) -> io::Result<()> {

@@ -5,7 +5,7 @@ pub enum TokenType {
     Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
   
     // One or two character tokens.
-    Bang, Bang_Eqlal,
+    Bang, Bang_Equal,
     Equal, Equal_Equal,
     Greater, Greater_Equal,
     Less, Less_Equal,

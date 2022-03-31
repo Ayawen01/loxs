@@ -30,6 +30,40 @@ impl Scanner {
                 b';' => tokens.push(Token{r#type: TokenType::Semicolon,     literal: LoxType::Nil, line: self.line}),
                 b'*' => tokens.push(Token{r#type: TokenType::Star,          literal: LoxType::Nil, line: self.line}),
 
+                b'!' => {
+                    let token_type = if self.matching(b'=') {
+                        TokenType::Bang_Equal
+                    } else {
+                        TokenType::Bang
+                    };
+                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                }
+                b'=' => {
+                    let token_type = if self.matching(b'=') {
+                        TokenType::Equal_Equal
+                    } else {
+                        TokenType::Equal
+                    };
+                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                }
+                b'<' => {
+                    let token_type = if self.matching(b'=') {
+                        TokenType::Less_Equal
+                    } else {
+                        TokenType::Less
+                    };
+                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                }
+                b'>' => {
+                    let token_type = if self.matching(b'=') {
+                        TokenType::Greater_Equal
+                    } else {
+                        TokenType::Greater
+                    };
+                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                }
+
+
                 _ => {
                     is_error = true;
                     errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
@@ -59,5 +93,23 @@ impl Scanner {
     fn advance(&mut self) -> u8 {
         self.current += 1;
         *self.source.get(self.current - 1).unwrap()
+    }
+
+    #[inline]
+    fn peek(&self) -> u8 {
+        *self.source.get(self.current).unwrap()
+    }
+
+    fn matching(&mut self, byte: u8) -> bool {
+        if self.is_at_end() {
+            return false
+        }
+
+        if self.peek() != byte {
+            return false
+        }
+
+        self.current += 1;
+        true
     }
 }
