@@ -62,6 +62,22 @@ impl Scanner {
                     };
                     tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
                 }
+                b'/' => {
+                    if self.matching(b'/') {
+                        while self.peek() != b'\n' && !self.is_at_end() {
+                            self.advance();
+                        }
+                    } else {
+                        tokens.push(Token{r#type: TokenType::Slash, literal: LoxType::Nil, line: self.line});
+                    }
+                }
+
+                b' ' |
+                b'\r'|
+                b'\t' => continue,
+
+                b'\n' => self.line += 1,
+
 
 
                 _ => {
@@ -97,6 +113,10 @@ impl Scanner {
 
     #[inline]
     fn peek(&self) -> u8 {
+        if self.is_at_end() {
+            return b'\0'
+        }
+
         *self.source.get(self.current).unwrap()
     }
 
