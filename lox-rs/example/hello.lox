@@ -1,1 +1,3 @@
-print "hello lox.";
+// this is a comment
+(( )){} // grouping stuff
+!*+-/=<> <= == // operators

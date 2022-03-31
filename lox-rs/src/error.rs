@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, Copy)]
 pub enum Error<'a> {
     LexError {
         char: char,
@@ -17,7 +18,12 @@ pub enum Error<'a> {
 impl<'a> Error<'a> {
     pub fn to_string(&self) -> String {
         match self {
-            Error::LexError { char, msg, line } => format!("[line {}] LexError `{}` {}", line, char, msg),
+            Error::LexError { char, msg, line } => {
+                if *char == ' ' {
+                    return format!("[line {}] LexError {}", line, msg)
+                }
+                format!("[line {}] LexError `{}` {}", line, char, msg)
+            }
             Error::ParseError { msg, line } => format!("[line {}] ParseError {}", line, msg),
             Error::RunTimeError { msg, line } => format!("[line {}] RunTimeError {}", line, msg),
         }
