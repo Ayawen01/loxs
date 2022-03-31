@@ -30,7 +30,6 @@ impl Scanner {
                 b';' => tokens.push(Token{r#type: TokenType::Semicolon,     literal: LoxType::Nil, line: self.line}),
                 b'*' => tokens.push(Token{r#type: TokenType::Star,          literal: LoxType::Nil, line: self.line}),
 
-
                 _ => {
                     is_error = true;
                     errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
@@ -41,6 +40,12 @@ impl Scanner {
         if is_error {
             return Err(errors)
         }
+
+        tokens.push(Token {
+            r#type: TokenType::Eof,
+            literal: LoxType::Nil,
+            line: self.line
+        });
 
         Ok(tokens)
     }
