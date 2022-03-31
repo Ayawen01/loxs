@@ -1,1 +1,1 @@
-E:\ayawen\github\loxs\lox-rs\target\debug\lox-rs.exe: E:\ayawen\github\loxs\lox-rs\src\main.rs
+E:\ayawen\github\loxs\lox-rs\target\debug\lox-rs.exe: E:\ayawen\github\loxs\lox-rs\src\error.rs E:\ayawen\github\loxs\lox-rs\src\lib.rs E:\ayawen\github\loxs\lox-rs\src\loxtype.rs E:\ayawen\github\loxs\lox-rs\src\main.rs E:\ayawen\github\loxs\lox-rs\src\scanner.rs E:\ayawen\github\loxs\lox-rs\src\token.rs E:\ayawen\github\loxs\lox-rs\src\tokentype.rs

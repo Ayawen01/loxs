@@ -17,10 +17,16 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
+
 fn run(source: Vec<u8>) {
-    let scanner = Scanner::new(source);
-    let tokens = scanner.scan_tokens();
-    println!("{:?}", tokens);
+    let mut scanner = Scanner::new(source);
+    let tokens = match scanner.scan_tokens() {
+        Ok(tokens) => tokens,
+        Err(errors) => {
+            errors.iter().for_each(|e| println!("{}", e.to_string()));
+            panic!()
+        }
+    };
 }
 
 fn run_file(path: &str) -> io::Result<()> {

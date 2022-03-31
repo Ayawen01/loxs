@@ -3,7 +3,7 @@ use crate::tokentype::TokenType;
 
 #[derive(Debug)]
 pub struct Token {
-    r#type: TokenType,
-    literal: LoxType,
-    line: u16
+    pub r#type: TokenType,
+    pub literal: LoxType,
+    pub line: u16
 }
