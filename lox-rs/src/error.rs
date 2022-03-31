@@ -1,5 +1,6 @@
 pub enum Error<'a> {
     LexError {
+        char: char,
         msg: &'a str,
         line: u16
     },
@@ -16,8 +17,8 @@ pub enum Error<'a> {
 impl<'a> Error<'a> {
     pub fn to_string(&self) -> String {
         match self {
-            Error::LexError { msg, line } => format!("[line {}] LexError {}", line, msg),
-            Error::ParseError { msg, line } =>format!("[line {}] ParseError {}", line, msg),
+            Error::LexError { char, msg, line } => format!("[line {}] LexError `{}` {}", line, char, msg),
+            Error::ParseError { msg, line } => format!("[line {}] ParseError {}", line, msg),
             Error::RunTimeError { msg, line } => format!("[line {}] RunTimeError {}", line, msg),
         }
     }

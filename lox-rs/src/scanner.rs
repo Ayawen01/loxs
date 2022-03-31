@@ -8,7 +8,7 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(source: Vec<u8>) -> Scanner {
-        Scanner { source, current: 0, line: 0 }
+        Scanner { source, current: 0, line: 1 }
     }
 
     pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Vec<Error>> {
@@ -33,7 +33,7 @@ impl Scanner {
 
                 _ => {
                     is_error = true;
-                    errors.push(Error::LexError{msg: "未知token.", line: self.line});
+                    errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
                 }
             }
         }
