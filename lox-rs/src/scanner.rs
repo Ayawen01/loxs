@@ -82,14 +82,8 @@ impl Scanner {
                     match self.string() {
                         Ok(str) => tokens.push(Token{r#type: TokenType::String, literal: str, line: self.line}),
                         Err(e) => {
-                            // errors.push(e);
-                            match e {
-                                Error::LexError { char, msg, line } => {
-                                    errors.push(Error::LexError{char, msg: "123", line});
-                                }
-                                _ => ()
-                            }
-                            //errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
+                            is_error = true;
+                            errors.push(e);
                         }
                     }
                 }
@@ -147,8 +141,8 @@ impl Scanner {
         true
     }
 
-    fn string(&mut self) -> Result<LoxType, Error> {
-        let start_index = self.current - 1;
+    fn string<'a>(&mut self) -> Result<LoxType, Error<'a>> {
+        let start_index = self.current;
 
         while self.peek() != b'"' && !self.is_at_end() {
             if self.peek() == b'\n' {
@@ -161,9 +155,9 @@ impl Scanner {
             return Err(Error::LexError{char: ' ', msg: "不是一个完整的字符串.", line: self.line})
         }
 
-        self.advance();
-
         let str = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
+
+        self.advance();
 
         Ok(LoxType::String(str))
     }
