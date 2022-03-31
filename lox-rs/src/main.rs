@@ -1,5 +1,7 @@
 use std::{env, process::exit, fs::File, io::{Read, self, Write}};
 
+use lox_rs::scanner::Scanner;
+
 fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
 
@@ -16,9 +18,9 @@ fn main() -> io::Result<()> {
 }
 
 fn run(source: Vec<u8>) {
-    //let scanner = Scanner::new();
-    //let tokens = scanner.scan_tokens();
-    //println!("{:?}", tokens);
+    let scanner = Scanner::new(source);
+    let tokens = scanner.scan_tokens();
+    println!("{:?}", tokens);
 }
 
 fn run_file(path: &str) -> io::Result<()> {
