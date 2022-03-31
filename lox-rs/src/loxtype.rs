@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub enum LoxType {
-    Nil,
+    Id(String),
     String(String),
     Double(f64),
-    Int(i32)
+    Nil,
 }

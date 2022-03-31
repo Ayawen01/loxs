@@ -75,7 +75,6 @@ impl Scanner {
                 b' ' |
                 b'\r'|
                 b'\t' => continue,
-
                 b'\n' => self.line += 1,
 
                 b'"' => {
@@ -89,8 +88,28 @@ impl Scanner {
                 }
 
                 _ => {
-                    is_error = true;
-                    errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
+                    if self.is_digit(byte) {
+                        match self.number() {
+                            Ok(num) => tokens.push(Token{r#type: TokenType::Number, literal: num, line: self.line}),
+                            Err(e) => {
+                                is_error = true;
+                                errors.push(e);
+                            }
+                        }
+                    } else if self.is_alpha(byte) {
+                        match self.identifier() {
+                            Ok((token_type, lox_type)) => {
+                                tokens.push(Token{r#type: token_type, literal: lox_type, line: self.line});
+                            }
+                            Err(e) => {
+                                is_error = true;
+                                errors.push(e);
+                            }
+                        }
+                    } else {
+                        is_error = true;
+                        errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
+                    }
                 }
             }
         }
@@ -128,6 +147,15 @@ impl Scanner {
         *self.source.get(self.current).unwrap()
     }
 
+    #[inline]
+    fn peek_next(&self) -> u8 {
+        if self.current + 1 >= self.source.len() {
+            return b'\0'
+        }
+
+        *self.source.get(self.current + 1).unwrap()
+    }
+
     fn matching(&mut self, byte: u8) -> bool {
         if self.is_at_end() {
             return false
@@ -152,7 +180,7 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            return Err(Error::LexError{char: ' ', msg: "不是一个完整的字符串.", line: self.line})
+            return Err(Error::LexError{char: ' ', msg: "不是一串完整的字符串.", line: self.line})
         }
 
         let str = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
@@ -160,5 +188,74 @@ impl Scanner {
         self.advance();
 
         Ok(LoxType::String(str))
+    }
+
+    fn number<'a>(&mut self) -> Result<LoxType, Error<'a>> {
+        let start_index = self.current - 1;
+        while self.is_digit(self.peek()) {
+            self.advance();
+        }
+
+        if self.peek() == b'.' && self.is_digit(self.peek_next()) {
+            self.advance();
+            
+            while self.is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+
+        let num = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
+        
+        match num.parse::<f64>() {
+            Ok(num) => Ok(LoxType::Double(num)),
+            Err(_) => Err(Error::LexError{char: ' ', msg: "不是一串有效的数字.", line: self.line})
+        }
+    }
+
+    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), Error<'a>> {
+        let start_index = self.current - 1;
+        while self.is_alpha_numeric(self.peek()) {
+            self.advance();
+        }
+
+        let id = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
+        match id.as_str() {
+            "and"       =>    Ok((TokenType::And, LoxType::Nil)),
+            "class"     =>    Ok((TokenType::Class, LoxType::Nil)),
+            "else"      =>    Ok((TokenType::Else, LoxType::Nil)),
+            "false"     =>    Ok((TokenType::False, LoxType::Nil)),
+            "for"       =>    Ok((TokenType::For, LoxType::Nil)),
+            "fun"       =>    Ok((TokenType::Fun, LoxType::Nil)),
+            "if"        =>    Ok((TokenType::If, LoxType::Nil)),
+            "nil"       =>    Ok((TokenType::Nil, LoxType::Nil)),
+            "or"        =>    Ok((TokenType::Or, LoxType::Nil)),
+            "print"     =>    Ok((TokenType::Print, LoxType::Nil)),
+            "return"    =>    Ok((TokenType::Return, LoxType::Nil)),
+            "super"     =>    Ok((TokenType::Super, LoxType::Nil)),
+            "this"      =>    Ok((TokenType::This, LoxType::Nil)),
+            "true"      =>    Ok((TokenType::True, LoxType::Nil)),
+            "var"       =>    Ok((TokenType::Var, LoxType::Nil)),
+            "while"     =>    Ok((TokenType::While, LoxType::Nil)),
+            _ => {
+                Ok((TokenType::Identifier, LoxType::Id(id)))
+            }
+        }
+    }
+
+    #[inline]
+    fn is_alpha_numeric(&self, c: u8) -> bool {
+        self.is_alpha(c) || self.is_digit(c)
+    }
+
+    #[inline]
+    fn is_digit(&self, c: u8) -> bool {
+        c >= b'0' && c <= b'9'
+    }
+
+    #[inline]
+    fn is_alpha(&self, c: u8) -> bool {
+        c >= b'a' && c <= b'z' ||
+        c >= b'A' && c <= b'Z' ||
+        c == b'_'
     }
 }

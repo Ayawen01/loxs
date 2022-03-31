@@ -5,3 +5,10 @@
 "hello lox";
 "a"
 ""
+
+114514
+114514.1919
+3.14;
+
+var text = "hello lox";
+print text;
