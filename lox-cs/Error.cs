@@ -19,6 +19,8 @@ namespace lox_cs
 
         public override string ToString()
         {
+            if (C is null)
+                return string.Format("[line {0}] LexError {1}", Line, Message);
             return string.Format("[line {0}] LexError `{1}` {2}", Line, C, Message);
         }
     }

@@ -24,9 +24,17 @@
             {
                 throw new Exception("source code is null.");
             }
-            var scanner = new Scanner(source);
-            scanner.ScanTokens();
-            scanner.Tokens.ForEach(t => Console.WriteLine(t));
+
+            try
+            {
+                var scanner = new Scanner(source);
+                scanner.ScanTokens();
+                scanner.Tokens.ForEach(t => Console.WriteLine(t));
+            }
+            catch (LexError e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private static void RunFile(string path)
