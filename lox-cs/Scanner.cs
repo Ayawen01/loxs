@@ -37,12 +37,63 @@ namespace lox_cs
 
         private void ScanToken()
         {
-            throw new NotImplementedException();
+            var c = Advance();
+            switch (c)
+            {
+                case '(':
+                    AddToken(TokenType.LEFT_PAREN);
+                    break;
+                case ')':
+                    AddToken(TokenType.RIGHT_PAREN);
+                    break;
+                case '{':
+                    AddToken(TokenType.LEFT_BRACE);
+                    break;
+                case '}':
+                    AddToken(TokenType.RIGHT_BRACE);
+                    break;
+                case ',':
+                    AddToken(TokenType.COMMA);
+                    break;
+                case '.':
+                    AddToken(TokenType.DOT);
+                    break;
+                case '-':
+                    AddToken(TokenType.MINUS);
+                    break;
+                case '+':
+                    AddToken(TokenType.PLUS);
+                    break;
+                case ';':
+                    AddToken(TokenType.SEMICOLON);
+                    break;
+                case '*':
+                    AddToken(TokenType.STAR);
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         private bool IsAtEnd()
         {
             return Current >= Source.Length;
+        }
+
+        private char Advance()
+        {
+            return Source[Current++];
+        }
+
+        private void AddToken(TokenType type)
+        {
+            AddToken(type, null);
+        }
+
+        private void AddToken(TokenType type, object? literal)
+        {
+            Tokens.Add(new Token(type, literal, Line));
         }
     }
 }
