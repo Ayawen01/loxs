@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "lox-cs": {
+      "commandName": "Project",
+      "commandLineArgs": "example/hello.lox"
+    }
+  }
+}

@@ -9,7 +9,7 @@ namespace lox_cs
     internal class Scanner
     {
         private string Source { get; }
-        private List<Token> Tokens { get; }
+        internal List<Token> Tokens { get; }
         private int Start { get; set; }
         private int Current { get; set; }
         private int Line { get; set; }
@@ -72,7 +72,7 @@ namespace lox_cs
                     break;
 
                 default:
-                    break;
+                    throw new LexError("未知的词素.", Line, c);
             }
         }
 
