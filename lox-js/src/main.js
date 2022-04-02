@@ -15,7 +15,8 @@ function main() {
 
 function run(source) {
     const scanner = new Scanner(source);
-    console.log(scanner.source);
+    const tokens = scanner.scan_tokens();
+    console.log(tokens);
 }
 
 function run_file(path) {
