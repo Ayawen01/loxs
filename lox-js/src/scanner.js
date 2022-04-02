@@ -1,5 +1,6 @@
-const Token = require("./token");
-const TokenType = require("./tokentype");
+const Token = require('./token');
+const TokenType = require('./tokentype');
+const { LexError } = require('./error');
 
 class Scanner {
     /**
@@ -45,12 +46,28 @@ class Scanner {
             case '>': this.match('=') ? this.add_token(TokenType.Greater_Equal) : this.add_token(TokenType.Greater); break;
             case '<': this.match('=') ? this.add_token(TokenType.Less_Equal) : this.add_token(TokenType.Less); break;
 
+            case '/':
+                if (this.match('/'))
+                    while (this.peek() != '\n' && !this.is_at_end())
+                        this.advance();
+                else
+                    this.add_token(TokenType.Slash);
+
             case ' ':
             case '\r':
             case '\t': break;
             case '\n': this.line++; break;
 
-            default: break;
+            case '"': this.string(); break;
+                
+
+            default:
+                if (this.is_dight(c))
+                    this.number();
+                else if (this.is_alpha(c))
+                    this.identifier();
+                else
+                    throw new LexError('未知的词素.', this.line, c);
         }
     }
 
@@ -125,15 +142,66 @@ class Scanner {
     }
 
     string() {
+        this.start = this.current;
+        
+        while (this.peek() != '"' && !this.is_at_end()) {
+            if (this.peek() == '\n')
+                this.line++;
+            this.advance();
+        }
 
+        if (this.is_at_end())
+            throw new LexError('不是一串完整的字符串.', this.line);
+
+        const str = this.source.slice(this.start, this.current);
+        this.add_token(TokenType.String, str);
+        this.advance();
     }
 
     number() {
+        this.start = this.current - 1;
 
+        while (this.is_dight(this.peek()))
+            this.advance();
+        
+        if (this.peek() == '.' && !this.is_at_end()) {
+            this.advance();
+
+            while (this.is_dight(this.peek()))
+                this.advance();
+        }
+
+        const number = Number(this.source.slice(this.start, this.current));
+        this.add_token(TokenType.Number, number);
     }
 
     identifier() {
+        this.start = this.current - 1;
 
+        while (this.is_alpha_numeric(this.peek()) && !this.is_at_end())
+            this.advance();
+        
+        const id = this.source.slice(this.start, this.current);
+
+        switch (id) {
+            case 'and'   : this.add_token(TokenType.And); break;
+            case 'class' : this.add_token(TokenType.Class); break;
+            case 'else'  : this.add_token(TokenType.Else); break;
+            case 'false' : this.add_token(TokenType.False); break;
+            case 'for'   : this.add_token(TokenType.For); break;
+            case 'fun'   : this.add_token(TokenType.Fun); break;
+            case 'if'    : this.add_token(TokenType.If); break;
+            case 'nil'   : this.add_token(TokenType.Nil); break;
+            case 'or'    : this.add_token(TokenType.Or); break;
+            case 'print' : this.add_token(TokenType.Print); break;
+            case 'return': this.add_token(TokenType.Return); break;
+            case 'super' : this.add_token(TokenType.Super); break;
+            case 'this'  : this.add_token(TokenType.This); break;
+            case 'true'  : this.add_token(TokenType.True); break;
+            case 'var'   : this.add_token(TokenType.Var); break;
+            case 'while' : this.add_token(TokenType.While); break;
+            default      : this.add_token(TokenType.Identifier, id);
+        }
     }
 }
 

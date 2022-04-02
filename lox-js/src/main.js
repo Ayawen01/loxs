@@ -1,6 +1,7 @@
 const readline = require('readline');
 const fs = require('fs');
 const Scanner = require('./scanner');
+const { LexError } = require('./error');
 
 function main() {
     const args = process.argv;
@@ -14,9 +15,15 @@ function main() {
 }
 
 function run(source) {
-    const scanner = new Scanner(source);
-    const tokens = scanner.scan_tokens();
-    console.log(tokens);
+    try {
+        const scanner = new Scanner(source);
+        const tokens = scanner.scan_tokens();
+        console.log(tokens);
+    } catch (e) {
+        if (e instanceof LexError) {
+            console.log(e.toString());
+        }
+    }
 }
 
 function run_file(path) {
