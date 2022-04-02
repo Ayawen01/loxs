@@ -1,5 +1,6 @@
 const readline = require('readline');
 const fs = require('fs');
+const Scanner = require('./scanner');
 
 function main() {
     const args = process.argv;
@@ -13,7 +14,8 @@ function main() {
 }
 
 function run(source) {
-    console.log(source);
+    const scanner = new Scanner(source);
+    console.log(scanner.source);
 }
 
 function run_file(path) {
