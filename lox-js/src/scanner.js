@@ -10,6 +10,7 @@ class Scanner {
      * @param {Number} start
      * @param {Number} current
      * @param {Number} line
+     * @param {Map} keywords
      */
     constructor(source) {
         this.tokens = [];
@@ -17,6 +18,24 @@ class Scanner {
         this.start = 0;
         this.current = 0;
         this.line = 1;
+        this.keywords = new Map([
+            ['and',     TokenType.And],
+            ['class',   TokenType.Class],
+            ['else',    TokenType.Else],
+            ['false',   TokenType.False],
+            ['for',     TokenType.For],
+            ['fun',     TokenType.Fun],
+            ['if',      TokenType.If],
+            ['nil',     TokenType.Nil],
+            ['or',      TokenType.Or],
+            ['print',   TokenType.Print],
+            ['return',  TokenType.Return],
+            ['super',   TokenType.Super],
+            ['this',    TokenType.This],
+            ['true',    TokenType.True],
+            ['var',     TokenType.Var],
+            ['while',   TokenType.While],
+        ]);
     }
 
     scan_tokens() {
@@ -183,25 +202,14 @@ class Scanner {
         
         const id = this.source.slice(this.start, this.current);
 
-        switch (id) {
-            case 'and'   : this.add_token(TokenType.And); break;
-            case 'class' : this.add_token(TokenType.Class); break;
-            case 'else'  : this.add_token(TokenType.Else); break;
-            case 'false' : this.add_token(TokenType.False); break;
-            case 'for'   : this.add_token(TokenType.For); break;
-            case 'fun'   : this.add_token(TokenType.Fun); break;
-            case 'if'    : this.add_token(TokenType.If); break;
-            case 'nil'   : this.add_token(TokenType.Nil); break;
-            case 'or'    : this.add_token(TokenType.Or); break;
-            case 'print' : this.add_token(TokenType.Print); break;
-            case 'return': this.add_token(TokenType.Return); break;
-            case 'super' : this.add_token(TokenType.Super); break;
-            case 'this'  : this.add_token(TokenType.This); break;
-            case 'true'  : this.add_token(TokenType.True); break;
-            case 'var'   : this.add_token(TokenType.Var); break;
-            case 'while' : this.add_token(TokenType.While); break;
-            default      : this.add_token(TokenType.Identifier, id);
+        const keyword = this.keywords.get(id);
+
+        if (keyword != undefined) {
+            this.add_token(keyword);
+            return;
         }
+
+        this.add_token(TokenType.Identifier, id);
     }
 }
 
