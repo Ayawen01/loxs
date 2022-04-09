@@ -22,7 +22,7 @@ fn run(source: Vec<u8>) {
     let tokens = match scanner.scan_tokens() {
         Ok(tokens) => tokens,
         Err(errors) => {
-            errors.iter().for_each(|e| println!("{}", e.to_string()));
+            errors.iter().for_each(|e| println!("{}", e));
             panic!("LexError.")
         }
     };
