@@ -1,6 +1,5 @@
-mod loxtype;
 mod token;
-mod tokentype;
 mod error;
+mod ast;
 
 pub mod scanner;

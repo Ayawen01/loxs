@@ -1,4 +1,4 @@
-use crate::{token::Token, tokentype::TokenType, loxtype::LoxType, error::Error};
+use crate::{token::{Token, LoxType, TokenType}, error::LoxError};
 
 pub struct Scanner {
     source: Vec<u8>,
@@ -11,7 +11,7 @@ impl Scanner {
         Scanner { source, current: 0, line: 1 }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Vec<Error>> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Vec<LoxError>> {
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
         let mut is_error = false;
@@ -19,10 +19,10 @@ impl Scanner {
         while !self.is_at_end() {
             let byte = self.advance();
             match byte {
-                b'(' => tokens.push(Token{r#type: TokenType::Left_Paren,    literal: LoxType::Nil, line: self.line}),
-                b')' => tokens.push(Token{r#type: TokenType::Right_Paren,   literal: LoxType::Nil, line: self.line}),
-                b'{' => tokens.push(Token{r#type: TokenType::Left_Brace,    literal: LoxType::Nil, line: self.line}),
-                b'}' => tokens.push(Token{r#type: TokenType::Right_Brace,   literal: LoxType::Nil, line: self.line}),
+                b'(' => tokens.push(Token{r#type: TokenType::LeftParen,    literal: LoxType::Nil, line: self.line}),
+                b')' => tokens.push(Token{r#type: TokenType::RightParen,   literal: LoxType::Nil, line: self.line}),
+                b'{' => tokens.push(Token{r#type: TokenType::LeftBrace,    literal: LoxType::Nil, line: self.line}),
+                b'}' => tokens.push(Token{r#type: TokenType::RightBrace,   literal: LoxType::Nil, line: self.line}),
                 b',' => tokens.push(Token{r#type: TokenType::Comma,         literal: LoxType::Nil, line: self.line}),
                 b'.' => tokens.push(Token{r#type: TokenType::Dot,           literal: LoxType::Nil, line: self.line}),
                 b'-' => tokens.push(Token{r#type: TokenType::Minus,         literal: LoxType::Nil, line: self.line}),
@@ -32,7 +32,7 @@ impl Scanner {
 
                 b'!' => {
                     let token_type = if self.matching(b'=') {
-                        TokenType::Bang_Equal
+                        TokenType::BangEqual
                     } else {
                         TokenType::Bang
                     };
@@ -40,7 +40,7 @@ impl Scanner {
                 }
                 b'=' => {
                     let token_type = if self.matching(b'=') {
-                        TokenType::Equal_Equal
+                        TokenType::EqualEqual
                     } else {
                         TokenType::Equal
                     };
@@ -48,7 +48,7 @@ impl Scanner {
                 }
                 b'<' => {
                     let token_type = if self.matching(b'=') {
-                        TokenType::Less_Equal
+                        TokenType::LessEqual
                     } else {
                         TokenType::Less
                     };
@@ -56,7 +56,7 @@ impl Scanner {
                 }
                 b'>' => {
                     let token_type = if self.matching(b'=') {
-                        TokenType::Greater_Equal
+                        TokenType::GreaterEqual
                     } else {
                         TokenType::Greater
                     };
@@ -108,7 +108,7 @@ impl Scanner {
                         }
                     } else {
                         is_error = true;
-                        errors.push(Error::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
+                        errors.push(LoxError::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
                     }
                 }
             }
@@ -169,7 +169,7 @@ impl Scanner {
         true
     }
 
-    fn string<'a>(&mut self) -> Result<LoxType, Error<'a>> {
+    fn string<'a>(&mut self) -> Result<LoxType, LoxError<'a>> {
         let start_index = self.current;
 
         while self.peek() != b'"' && !self.is_at_end() {
@@ -180,7 +180,7 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            return Err(Error::LexError{char: ' ', msg: "不是一串完整的字符串.", line: self.line})
+            return Err(LoxError::LexError{char: ' ', msg: "不是一串完整的字符串.", line: self.line})
         }
 
         let str = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
@@ -190,7 +190,7 @@ impl Scanner {
         Ok(LoxType::String(str))
     }
 
-    fn number<'a>(&mut self) -> Result<LoxType, Error<'a>> {
+    fn number<'a>(&mut self) -> Result<LoxType, LoxError<'a>> {
         let start_index = self.current - 1;
         while self.is_digit(self.peek()) {
             self.advance();
@@ -207,12 +207,12 @@ impl Scanner {
         let num = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
         
         match num.parse::<f64>() {
-            Ok(num) => Ok(LoxType::Double(num)),
-            Err(_) => Err(Error::LexError{char: ' ', msg: "不是一串有效的数字.", line: self.line})
+            Ok(num) => Ok(LoxType::Number(num)),
+            Err(_) => Err(LoxError::LexError{char: ' ', msg: "不是一串有效的数字.", line: self.line})
         }
     }
 
-    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), Error<'a>> {
+    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), LoxError<'a>> {
         let start_index = self.current - 1;
         while self.is_alpha_numeric(self.peek()) {
             self.advance();
