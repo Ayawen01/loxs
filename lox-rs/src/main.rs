@@ -1,6 +1,6 @@
 use std::{env, process::exit, fs::File, io::{Read, self, Write}};
 
-use lox_rs::scanner::Scanner;
+use lox_rs::{scanner::Scanner, parser::{self, Parser}};
 
 fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -27,6 +27,9 @@ fn run(source: Vec<u8>) {
         }
     };
     tokens.iter().for_each(|token| println!("{:?}", token));
+    let mut parser = Parser::new(tokens);
+    let r = parser.parse();
+    println!("{:#?}", r);
 }
 
 fn run_file(path: &str) -> io::Result<()> {

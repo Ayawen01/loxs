@@ -1,11 +1,11 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub r#type: TokenType,
     pub literal: LoxType,
     pub line: u16
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LoxType {
     Id(String),
     String(String),
@@ -13,7 +13,7 @@ pub enum LoxType {
     Nil,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen, RightParen, LeftBrace, RightBrace,

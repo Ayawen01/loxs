@@ -32,6 +32,7 @@ pub trait VisitorExpr<R> {
     }
 }
 
+#[derive(Debug)]
 pub enum Expr {
     Assign {
         name: Token,
@@ -83,6 +84,7 @@ pub enum Expr {
     }
 }
 
+#[derive(Debug)]
 pub enum LoxLiteral {
     String(String),
     Number(f64),
@@ -116,6 +118,7 @@ pub trait VisitorStmt<R> {
     }
 }
 
+#[derive(Debug)]
 pub enum Stmt {
     Block {
         statements: Vec<Stmt>
