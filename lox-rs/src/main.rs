@@ -1,6 +1,6 @@
 use std::{env, process::exit, fs::File, io::{Read, self, Write}};
 
-use lox_rs::{scanner::Scanner, parser::{self, Parser}};
+use lox_rs::{scanner::Scanner, parser::Parser};
 
 fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();

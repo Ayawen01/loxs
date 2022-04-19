@@ -132,12 +132,6 @@ impl Parser {
 }
 
 impl Parser {
-    fn get_mut(&self) -> &mut Self {
-        unsafe {
-            &mut *(self as *const Self as *mut Self)
-        }
-    }
-
     fn matches(&mut self, types: &[TokenType]) -> bool {
         for t in types {
             if self.check(t) {
