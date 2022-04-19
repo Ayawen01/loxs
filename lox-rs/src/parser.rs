@@ -19,11 +19,17 @@ impl Parser {
     }
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = self.comparison().unwrap();
+        let mut expr = match self.comparison() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
 
         while self.matches(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
-            let right = self.comparison().unwrap();
+            let right = match self.comparison() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
             expr = Expr::Binary { left: Box::new(expr), operator, right: Box::new(right) }
         }
 
@@ -31,11 +37,17 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = self.term().unwrap();
+        let mut expr = match self.term() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
 
         while self.matches(&[TokenType::Greater, TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual]) {
             let operator = self.previous();
-            let right = self.term().unwrap();
+            let right = match self.term() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
             expr = Expr::Binary { left: Box::new(expr), operator, right: Box::new(right) }
         }
 
@@ -43,11 +55,17 @@ impl Parser {
     }
 
     fn term(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = self.factor().unwrap();
+        let mut expr = match self.factor() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
 
         while self.matches(&[TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous();
-            let right = self.factor().unwrap();
+            let right = match self.factor() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e),
+            };
             expr = Expr::Binary { left: Box::new(expr), operator, right: Box::new(right) }
         }
 
@@ -55,11 +73,17 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = self.unary().unwrap();
+        let mut expr = match self.unary() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e),
+        };
 
         while self.matches(&[TokenType::Slash, TokenType::Star]) {
             let operator = self.previous();
-            let right = self.unary().unwrap();
+            let right = match self.unary() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
             expr = Expr::Binary { left: Box::new(expr), operator, right: Box::new(right) }
         }
 
@@ -69,7 +93,10 @@ impl Parser {
     fn unary(&mut self) -> Result<Expr, LoxError> {
         if self.matches(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous();
-            let right = self.unary().unwrap();
+            let right = match self.unary() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
             return Ok(Expr::Unary { operator, right: Box::new(right) })
         }
 
@@ -98,12 +125,17 @@ impl Parser {
         }
 
         if self.matches(&[TokenType::LeftParen]) {
-            let expr = self.expression().unwrap();
-            self.consume(&TokenType::RightParen, "Expect ')' after expression.");
+            let expr = match self.expression() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
+            if let Err(e) = self.consume(&TokenType::RightParen, "Expect ')' after expression.") {
+                return Err(e);
+            };
             return Ok(Expr::Grouping { expression: Box::new(expr)});
         }
         
-        Err(LoxError::ParseError { msg: "Expect expression.", line: self.peek().line })
+        Err(LoxError::ParseError { msg: "Expect expression.".into(), line: self.peek().line })
     }
 
     fn synchronize(&mut self) {
@@ -173,6 +205,6 @@ impl Parser {
         if self.check(t) {
             return Ok(self.advance());
         }
-        Err(LoxError::ParseError { msg, line: self.peek().line })
+        Err(LoxError::ParseError { msg: msg.into(), line: self.peek().line })
     }
 }

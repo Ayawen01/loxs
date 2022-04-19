@@ -108,7 +108,7 @@ impl Scanner {
                         }
                     } else {
                         is_error = true;
-                        errors.push(LoxError::LexError{msg: "未知的词素.", char: byte as char, line: self.line});
+                        errors.push(LoxError::LexError{msg: "未知的词素.".into(), char: byte as char, line: self.line});
                     }
                 }
             }
@@ -169,7 +169,7 @@ impl Scanner {
         true
     }
 
-    fn string<'a>(&mut self) -> Result<LoxType, LoxError<'a>> {
+    fn string<'a>(&mut self) -> Result<LoxType, LoxError> {
         let start_index = self.current;
 
         while self.peek() != b'"' && !self.is_at_end() {
@@ -180,7 +180,7 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            return Err(LoxError::LexError{char: ' ', msg: "不是一串完整的字符串.", line: self.line})
+            return Err(LoxError::LexError{char: ' ', msg: "不是一串完整的字符串.".into(), line: self.line})
         }
 
         let str = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
@@ -190,7 +190,7 @@ impl Scanner {
         Ok(LoxType::String(str))
     }
 
-    fn number<'a>(&mut self) -> Result<LoxType, LoxError<'a>> {
+    fn number<'a>(&mut self) -> Result<LoxType, LoxError> {
         let start_index = self.current - 1;
         while self.is_digit(self.peek()) {
             self.advance();
@@ -208,11 +208,11 @@ impl Scanner {
         
         match num.parse::<f64>() {
             Ok(num) => Ok(LoxType::Number(num)),
-            Err(_) => Err(LoxError::LexError{char: ' ', msg: "不是一串有效的数字.", line: self.line})
+            Err(_) => Err(LoxError::LexError{char: ' ', msg: "不是一串有效的数字.".into(), line: self.line})
         }
     }
 
-    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), LoxError<'a>> {
+    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), LoxError> {
         let start_index = self.current - 1;
         while self.is_alpha_numeric(self.peek()) {
             self.advance();
