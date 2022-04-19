@@ -23,13 +23,20 @@ fn run(source: Vec<u8>) {
         Ok(tokens) => tokens,
         Err(errors) => {
             errors.iter().for_each(|e| println!("{}", e));
-            panic!("LexError.")
+            return;
         }
     };
-    tokens.iter().for_each(|token| println!("{:?}", token));
+    // tokens.iter().for_each(|token| println!("{:?}", token));
+    
     let mut parser = Parser::new(tokens);
-    let r = parser.parse();
-    println!("{:#?}", r);
+    let ast = match parser.parse() {
+        Ok(ast) => ast,
+        Err(e) => {
+            println!("{}", e);
+            return;
+        }
+    };
+    println!("{:#?}", ast);
 }
 
 fn run_file(path: &str) -> io::Result<()> {

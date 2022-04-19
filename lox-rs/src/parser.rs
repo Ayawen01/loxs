@@ -177,7 +177,7 @@ impl Parser {
 
         Err(LoxError::ParseError {
             msg: "Expect expression.".into(),
-            line: self.peek().line,
+            line: self.previous().line,
         })
     }
 
