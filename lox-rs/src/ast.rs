@@ -1,17 +1,19 @@
+use std::fmt::{Debug, Display};
+
 use crate::{token::Token, error::LoxError};
 
 pub trait VisitorExpr<R> {
     fn visit_assign_expr(&self, name: Token, value: Box<Expr>) -> Result<R, LoxError>;
-    fn visit_binary_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
+    fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
     fn visit_call_expr(&self, callee: Box<Expr>, paren: Token, arguments: Vec<Expr>) -> Result<R, LoxError>;
     fn visit_get_expr(&self, object: Box<Expr>, name: Token) -> Result<R, LoxError>;
-    fn visit_grouping_expr(&self, expression: Box<Expr>) -> Result<R, LoxError>;
+    fn visit_grouping_expr(&mut self, expression: Box<Expr>) -> Result<R, LoxError>;
     fn visit_literal_expr(&self, value: LoxLiteral) -> Result<R, LoxError>;
     fn visit_logical_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
     fn visit_set_expr(&self, object: Box<Expr>, name: Token, value: Box<Expr>) -> Result<R, LoxError>;
     fn visit_super_expr(&self, keyword: Token, method: Token) -> Result<R, LoxError>;
     fn visit_this_expr(&self, keyword: Token) -> Result<R, LoxError>;
-    fn visit_unary_expr(&self, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
+    fn visit_unary_expr(&mut self, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
     fn visit_variable_expr(&self, name: Token) -> Result<R, LoxError>;
 
     fn evaluate(&mut self, expr: Expr) -> Result<R, LoxError> {
@@ -90,6 +92,26 @@ pub enum LoxLiteral {
     Number(f64),
     Bool(bool),
     Nil
+}
+
+#[derive(Clone)]
+pub enum LoxValue {
+    String(String),
+    Number(f64),
+    Bool(bool),
+    Nil
+}
+
+impl Display for LoxValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let r = match self {
+            LoxValue::String(_) => "string",
+            LoxValue::Number(_) => "number",
+            LoxValue::Bool(_) => "bool",
+            LoxValue::Nil => "nil",
+        };
+        write!(f, "{}", r)
+    }
 }
 
 pub trait VisitorStmt<R> {

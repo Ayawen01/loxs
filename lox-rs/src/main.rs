@@ -1,6 +1,6 @@
 use std::{env, process::exit, fs::File, io::{Read, self, Write}};
 
-use lox_rs::{scanner::Scanner, parser::Parser};
+use lox_rs::{scanner::Scanner, parser::Parser, interpreter::Interpreter};
 
 fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -36,7 +36,14 @@ fn run(source: Vec<u8>) {
             return;
         }
     };
-    println!("{:#?}", ast);
+    // println!("{:#?}", ast);
+
+    let mut interpreter = Interpreter;
+    let run_result = interpreter.interpret(ast);
+    match run_result {
+        Ok(r) => println!("{}", r),
+        Err(e) => println!("{}", e)
+    }
 }
 
 fn run_file(path: &str) -> io::Result<()> {
