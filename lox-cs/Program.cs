@@ -30,8 +30,15 @@
                 var scanner = new Scanner(source);
                 scanner.ScanTokens();
                 scanner.Tokens.ForEach(t => Console.WriteLine(t));
+
+                var parser = new Parser(scanner.Tokens);
+                var ast = parser.Parse();
             }
             catch (LexError e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            catch (ParseError e)
             {
                 Console.WriteLine(e.ToString());
             }

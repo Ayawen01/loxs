@@ -24,4 +24,19 @@ namespace lox_cs
             return string.Format("[line {0}] LexError `{1}` {2}", Line, C, Message);
         }
     }
+
+    internal class ParseError : Exception
+    {
+        private int Line { get; }
+
+        internal ParseError(string message, int line) : base(message)
+        {
+            Line = line;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[line {0}] ParseError {1}", Line, Message);
+        }
+    }
 }
