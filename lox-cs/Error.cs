@@ -39,4 +39,19 @@ namespace lox_cs
             return string.Format("[line {0}] ParseError {1}", Line, Message);
         }
     }
+
+    internal class RuntimeError : Exception
+    {
+        private int Line { get; }
+
+        internal RuntimeError(string message, int line) : base(message)
+        {
+            Line = line;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[line {0}] RuntimeError {1}", Line, Message);
+        }
+    }
 }

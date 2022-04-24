@@ -8,9 +8,28 @@ namespace lox_cs
 {
     internal class Interpreter : Expr.IVisitor<object>
     {
-        internal Interpreter()
+        internal void Interpret(Expr expr)
         {
+            object value = Evaluate(expr);
+            Console.WriteLine(Stringify(value));
+        }
 
+        private string Stringify(object obj)
+        {
+            if (obj is null)
+                return "nil";
+
+            if (obj is double)
+            {
+                string text = obj.ToString()!;
+                if (text.EndsWith(".0"))
+                {
+                    text = text.Substring(0, text.Length - 2);
+                }
+                return text;
+            }
+
+            return obj.ToString();
         }
 
         private object Evaluate(Expr expression)
@@ -38,29 +57,50 @@ namespace lox_cs
             object right = Evaluate(expr.Right);
 
             switch (expr.Operator.Type) {
+                case TokenType.BANG_EQUAL:
+                    return !IsEqual(left, right);
+                case TokenType.EQUAL_EQUAL:
+                    return IsEqual(left, right);
                 case TokenType.GREATER:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left > (double)right;
                 case TokenType.GREATER_EQUAL:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left >= (double)right;
                 case TokenType.LESS:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left < (double)right;
                 case TokenType.LESS_EQUAL:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left <= (double)right;
                 case TokenType.MINUS:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left - (double)right;
                 case TokenType.SLASH:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left / (double)right;
                 case TokenType.STAR:
+                    CheckNumberOperands(expr.Operator, left, right);
                     return (double)left * (double)right;
                 case TokenType.PLUS:
                     if (left is double && right is double)
                         return (double)left + (double)right;
                     if (left is string && right is string)
                         return (string)left + (string)right;
-                    break;
+                    throw new RuntimeError("Operands must be two numbers or two strings.", expr.Operator.Line);
             }
 
             return null;
+        }
+
+        private bool IsEqual(object left, object right)
+        {
+            if (left is null && right is null)
+                return true;
+            if (left is null)
+                return false;
+
+            return left == right;
         }
 
         public object VisitCallExpr(Expr.Call expr)
@@ -110,12 +150,27 @@ namespace lox_cs
             switch (expr.Operator.Type)
             {
                 case TokenType.MINUS:
+                    CheckNumberOperand(expr.Operator, right);
                     return -(double)right;
                 case TokenType.BANG:
                     return !IsTruthy(right);
             }
 
             return null;
+        }
+
+        private void CheckNumberOperand(Token @operator, object operand)
+        {
+            if (operand is double)
+                return;
+            throw new RuntimeError("Operand must be a number.", @operator.Line);
+        }
+
+        private void CheckNumberOperands(Token @operator, object left, object right)
+        {
+            if (left is double && right is double)
+                return;
+            throw new RuntimeError("Operand must be a number.", @operator.Line);
         }
 
         public object VisitVariableExpr(Expr.Variable expr)
