@@ -40,7 +40,7 @@ impl Interpreter {
             LoxValue::String(str) => str,
             LoxValue::Number(num) => num.to_string(),
             LoxValue::Bool(bool) => bool.to_string(),
-            LoxValue::Nil => "nil".to_owned(),
+            LoxValue::Nil => "nil".to_owned()
         }
     }
 }
@@ -68,7 +68,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Bool(l > r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::GreaterEqual => {
@@ -76,7 +76,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Bool(l >= r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::Less => {
@@ -84,7 +84,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Bool(l < r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::LessEqual => {
@@ -92,7 +92,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Bool(l <= r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::Minus => {
@@ -100,7 +100,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Number(l - r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             }
             TokenType::Plus => {
@@ -109,7 +109,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     (LoxValue::String(l), LoxValue::String(r)) => Ok(LoxValue::String(l + &r)),
                     _ => {
                         let msg = format!("{} and {} must both be numbers or both be strings.", left, right);
-                        Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                        Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                     }
                 }
             }
@@ -118,7 +118,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Number(l / r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             }
             TokenType::Star => {
@@ -126,7 +126,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     Ok(LoxValue::Number(l * r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
-                    Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line })
+                    Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             }
             _ => {
@@ -185,7 +185,7 @@ impl VisitorExpr<LoxValue> for Interpreter {
                     LoxValue::Number(-num)
                 } else {
                     let msg = format!("{} must be a number.", right);
-                    return Err(LoxError::RunTimeError { msg: msg.into(), line: operator.line });
+                    return Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line });
                 }
             }
             _ => LoxValue::Nil

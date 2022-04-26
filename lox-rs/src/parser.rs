@@ -10,14 +10,17 @@ pub struct Parser {
 }
 
 impl Parser {
+    #[inline]
     pub fn new(tokens: Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
     }
 
+    #[inline]
     pub fn parse(&mut self) -> Result<Expr, LoxError> {
         self.expression()
     }
 
+    #[inline]
     fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
     }
@@ -25,19 +28,19 @@ impl Parser {
     fn equality(&mut self) -> Result<Expr, LoxError> {
         let mut expr = match self.comparison() {
             Ok(expr) => expr,
-            Err(e) => return Err(e),
+            Err(e) => return Err(e)
         };
 
         while self.matches(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
             let right = match self.comparison() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
-                right: Box::new(right),
+                right: Box::new(right)
             }
         }
 
@@ -47,24 +50,24 @@ impl Parser {
     fn comparison(&mut self) -> Result<Expr, LoxError> {
         let mut expr = match self.term() {
             Ok(expr) => expr,
-            Err(e) => return Err(e),
+            Err(e) => return Err(e)
         };
 
         while self.matches(&[
             TokenType::Greater,
             TokenType::GreaterEqual,
             TokenType::Less,
-            TokenType::LessEqual,
+            TokenType::LessEqual
         ]) {
             let operator = self.previous();
             let right = match self.term() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
-                right: Box::new(right),
+                right: Box::new(right)
             }
         }
 
@@ -74,19 +77,19 @@ impl Parser {
     fn term(&mut self) -> Result<Expr, LoxError> {
         let mut expr = match self.factor() {
             Ok(expr) => expr,
-            Err(e) => return Err(e),
+            Err(e) => return Err(e)
         };
 
         while self.matches(&[TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous();
             let right = match self.factor() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
-                right: Box::new(right),
+                right: Box::new(right)
             }
         }
 
@@ -96,19 +99,19 @@ impl Parser {
     fn factor(&mut self) -> Result<Expr, LoxError> {
         let mut expr = match self.unary() {
             Ok(expr) => expr,
-            Err(e) => return Err(e),
+            Err(e) => return Err(e)
         };
 
         while self.matches(&[TokenType::Slash, TokenType::Star]) {
             let operator = self.previous();
             let right = match self.unary() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
-                right: Box::new(right),
+                right: Box::new(right)
             }
         }
 
@@ -120,11 +123,11 @@ impl Parser {
             let operator = self.previous();
             let right = match self.unary() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             return Ok(Expr::Unary {
                 operator,
-                right: Box::new(right),
+                right: Box::new(right)
             });
         }
 
@@ -134,17 +137,17 @@ impl Parser {
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if self.matches(&[TokenType::False]) {
             return Ok(Expr::Literal {
-                value: LoxLiteral::Bool(false),
+                value: LoxLiteral::Bool(false)
             });
         }
         if self.matches(&[TokenType::True]) {
             return Ok(Expr::Literal {
-                value: LoxLiteral::Bool(true),
+                value: LoxLiteral::Bool(true)
             });
         }
         if self.matches(&[TokenType::Nil]) {
             return Ok(Expr::Literal {
-                value: LoxLiteral::Nil,
+                value: LoxLiteral::Nil
             });
         }
 
@@ -152,12 +155,12 @@ impl Parser {
             let literal = self.previous().literal;
             if let LoxType::String(str) = literal {
                 return Ok(Expr::Literal {
-                    value: LoxLiteral::String(str),
+                    value: LoxLiteral::String(str)
                 });
             }
             if let LoxType::Number(num) = literal {
                 return Ok(Expr::Literal {
-                    value: LoxLiteral::Number(num),
+                    value: LoxLiteral::Number(num)
                 });
             }
         }
@@ -165,19 +168,19 @@ impl Parser {
         if self.matches(&[TokenType::LeftParen]) {
             let expr = match self.expression() {
                 Ok(expr) => expr,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e)
             };
             if let Err(e) = self.consume(&TokenType::RightParen, "Expect ')' after expression.") {
                 return Err(e);
             };
             return Ok(Expr::Grouping {
-                expression: Box::new(expr),
+                expression: Box::new(expr)
             });
         }
 
         Err(LoxError::ParseError {
             msg: "Expect expression.".into(),
-            line: self.previous().line,
+            line: self.previous().line
         })
     }
 
@@ -225,14 +228,17 @@ impl Parser {
         self.peek().r#type == *t
     }
 
+    #[inline]
     fn previous(&self) -> Token {
         self.tokens[self.current - 1].clone()
     }
 
+    #[inline]
     fn is_at_end(&self) -> bool {
         self.peek().r#type == TokenType::Eof
     }
 
+    #[inline]
     fn peek(&self) -> Token {
         self.tokens[self.current].clone()
     }

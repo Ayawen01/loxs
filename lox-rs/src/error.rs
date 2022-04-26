@@ -11,7 +11,7 @@ pub enum LoxError {
         msg: Box<str>,
         line: u16
     },
-    RunTimeError {
+    RuntimeError {
         msg: Box<str>,
         line: u16
     }
@@ -27,7 +27,7 @@ impl Display for LoxError {
                 write!(f, "[line {}] LexError `{}` {}", line, char, msg)
             }
             LoxError::ParseError { msg, line } => write!(f, "[line {}] ParseError {}", line, msg),
-            LoxError::RunTimeError { msg, line } => write!(f, "[line {}] RunTimeError {}", line, msg),
+            LoxError::RuntimeError { msg, line } => write!(f, "[line {}] RunTimeError {}", line, msg)
         }
     }
 }

@@ -7,6 +7,7 @@ pub struct Scanner {
 }
 
 impl Scanner {
+    #[inline]
     pub fn new(source: Vec<u8>) -> Scanner {
         Scanner { source, current: 0, line: 1 }
     }
