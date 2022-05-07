@@ -39,10 +39,12 @@ fn run(source: Vec<u8>) {
     // println!("{:#?}", ast);
 
     let mut interpreter = Interpreter;
-    let run_result = interpreter.interpret(ast);
-    match run_result {
-        Ok(r) => println!("{}", r),
-        Err(e) => println!("{}", e)
+    match interpreter.interpret(ast) {
+        Ok(_) => (),
+        Err(e) => {
+            println!("{}", e);
+            return;
+        }
     }
 }
 

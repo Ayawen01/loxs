@@ -117,10 +117,10 @@ impl Display for LoxValue {
 pub trait VisitorStmt<R> {
     fn visit_block_stmt(&self, statements: Vec<Stmt>) -> Result<R, LoxError>;
     fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<Stmt>) -> Result<R, LoxError>;
-    fn visit_expression_stmt(&self, expression: Expr) -> Result<R, LoxError>;
+    fn visit_expression_stmt(&mut self, expression: Expr) -> Result<R, LoxError>;
     fn visit_function_stmt(&self, name: Token, params: Vec<Token>, body: Vec<Stmt>) -> Result<R, LoxError>;
     fn visit_if_stmt(&self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<R, LoxError>;
-    fn visit_print_stmt(&self, expression: Expr) -> Result<R, LoxError>;
+    fn visit_print_stmt(&mut self, expression: Expr) -> Result<R, LoxError>;
     fn visit_return_stmt(&self, keyword: Token, value: Option<Expr>) -> Result<R, LoxError>;
     fn visit_var_stmt(&self, name: Token, initializer: Option<Expr>) -> Result<R, LoxError>;
     fn visit_while_stmt(&self, condition: Expr, body: Box<Stmt>) -> Result<R, LoxError>;

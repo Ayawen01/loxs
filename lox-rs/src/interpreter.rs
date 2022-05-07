@@ -1,5 +1,5 @@
 use crate::{
-    ast::{VisitorExpr, Expr, LoxValue, LoxLiteral},
+    ast::{VisitorExpr, Expr, LoxValue, LoxLiteral, VisitorStmt, Stmt},
     error::LoxError,
     token::{Token, TokenType},
 };
@@ -7,11 +7,11 @@ use crate::{
 pub struct Interpreter;
 
 impl Interpreter {
-    pub fn interpret(&mut self, expr: Expr) -> Result<String, LoxError> {
-        match self.evaluate(expr) {
-            Ok(value) => Ok(self.stringify(value)),
-            Err(e) => Err(e)
+    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
+        for stmt in statements {
+            self.execute(stmt)?;
         }
+        Ok(())
     }
     
     #[inline]
@@ -193,6 +193,51 @@ impl VisitorExpr<LoxValue> for Interpreter {
     }
 
     fn visit_variable_expr(&self, name: Token) -> Result<LoxValue, LoxError> {
+        todo!()
+    }
+}
+
+impl VisitorStmt<()> for Interpreter {
+    fn visit_block_stmt(&self, statements: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_expression_stmt(&mut self, expression: Expr) -> Result<(), LoxError> {
+        match self.evaluate(expression) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e)
+        }
+    }
+
+    fn visit_function_stmt(&self, name: Token, params: Vec<Token>, body: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_if_stmt(&self, condition: Expr, then_branch: Box<crate::ast::Stmt>, else_branch: Option<Box<crate::ast::Stmt>>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_print_stmt(&mut self, expression: Expr) -> Result<(), LoxError> {
+        match self.evaluate(expression) {
+            Ok(expr) => println!("{}", self.stringify(expr)),
+            Err(e) => return Err(e)
+        };
+        Ok(())
+    }
+
+    fn visit_return_stmt(&self, keyword: Token, value: Option<Expr>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_var_stmt(&self, name: Token, initializer: Option<Expr>) -> Result<(), LoxError> {
+        todo!()
+    }
+
+    fn visit_while_stmt(&self, condition: Expr, body: Box<crate::ast::Stmt>) -> Result<(), LoxError> {
         todo!()
     }
 }

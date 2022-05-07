@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Expr, LoxLiteral},
+    ast::{Expr, LoxLiteral, Stmt},
     error::LoxError,
     token::{LoxType, Token, TokenType},
 };
@@ -16,13 +16,46 @@ impl Parser {
     }
 
     #[inline]
-    pub fn parse(&mut self) -> Result<Expr, LoxError> {
-        self.expression()
+    pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
+        let mut statements = Vec::new();
+
+        match self.statements() {
+            Ok(stmt) => statements.push(stmt),
+            Err(e) => return Err(e)
+        }
+
+        Ok(statements)
     }
 
     #[inline]
     fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
+    }
+
+    fn statements(&mut self) -> Result<Stmt, LoxError> {
+        if self.matches(&[TokenType::Print]) {
+            self.print_statement()
+        } else {
+            self.expression_statement()
+        }
+    }
+
+    fn print_statement(&mut self) -> Result<Stmt, LoxError> {
+        let expr = match self.expression() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
+        self.consume(&TokenType::Semicolon, "Expect ';' after value.");
+        Ok(Stmt::Print { expression: expr })
+    }
+
+    fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
+        let expr = match self.expression() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
+        self.consume(&TokenType::Semicolon, "Expect ';' after expression.");
+        Ok(Stmt::Expression { expression: expr })
     }
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
