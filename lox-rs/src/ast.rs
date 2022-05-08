@@ -14,7 +14,7 @@ pub trait VisitorExpr<R> {
     fn visit_super_expr(&self, keyword: Token, method: Token) -> Result<R, LoxError>;
     fn visit_this_expr(&self, keyword: Token) -> Result<R, LoxError>;
     fn visit_unary_expr(&mut self, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
-    fn visit_variable_expr(&self, name: Token) -> Result<R, LoxError>;
+    fn visit_variable_expr(&mut self, name: Token) -> Result<R, LoxError>;
 
     fn evaluate(&mut self, expr: Expr) -> Result<R, LoxError> {
         match expr {
@@ -122,7 +122,7 @@ pub trait VisitorStmt<R> {
     fn visit_if_stmt(&self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<R, LoxError>;
     fn visit_print_stmt(&mut self, expression: Expr) -> Result<R, LoxError>;
     fn visit_return_stmt(&self, keyword: Token, value: Option<Expr>) -> Result<R, LoxError>;
-    fn visit_var_stmt(&self, name: Token, initializer: Option<Expr>) -> Result<R, LoxError>;
+    fn visit_var_stmt(&mut self, name: Token, initializer: Option<Expr>) -> Result<R, LoxError>;
     fn visit_while_stmt(&self, condition: Expr, body: Box<Stmt>) -> Result<R, LoxError>;
 
     fn execute(&mut self, stmt: Stmt) -> Result<R, LoxError> {

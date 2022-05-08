@@ -1,16 +1,26 @@
+use std::collections::HashMap;
+
 use crate::{
     ast::{VisitorExpr, Expr, LoxValue, LoxLiteral, VisitorStmt, Stmt},
     error::LoxError,
-    token::{Token, TokenType},
+    token::{Token, TokenType}, environment::Environment,
 };
 
-pub struct Interpreter;
+pub struct Interpreter {
+    values: HashMap<String, LoxValue>,
+    environment: Environment
+}
 
 impl Interpreter {
+    pub fn new() -> Interpreter {
+        Interpreter { values: HashMap::new(), environment: Environment::new() }
+    }
+
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for stmt in statements {
             self.execute(stmt)?;
         }
+        
         Ok(())
     }
     
@@ -192,8 +202,8 @@ impl VisitorExpr<LoxValue> for Interpreter {
         })
     }
 
-    fn visit_variable_expr(&self, name: Token) -> Result<LoxValue, LoxError> {
-        todo!()
+    fn visit_variable_expr(&mut self, name: Token) -> Result<LoxValue, LoxError> {
+        self.environment.get(name)
     }
 }
 
@@ -233,8 +243,16 @@ impl VisitorStmt<()> for Interpreter {
         todo!()
     }
 
-    fn visit_var_stmt(&self, name: Token, initializer: Option<Expr>) -> Result<(), LoxError> {
-        todo!()
+    fn visit_var_stmt(&mut self, name: Token, initializer: Option<Expr>) -> Result<(), LoxError> {
+        if let Some(expr) = initializer {
+            match self.evaluate(expr) {
+                Ok(v) => {
+                    self.environment.define(name.lexeme.unwrap(), v);
+                }
+                Err(e) => return Err(e)
+            };
+        }
+        Ok(())
     }
 
     fn visit_while_stmt(&self, condition: Expr, body: Box<crate::ast::Stmt>) -> Result<(), LoxError> {

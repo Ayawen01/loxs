@@ -20,16 +20,16 @@ impl Scanner {
         while !self.is_at_end() {
             let byte = self.advance();
             match byte {
-                b'(' => tokens.push(Token{r#type: TokenType::LeftParen,    literal: LoxType::Nil, line: self.line}),
-                b')' => tokens.push(Token{r#type: TokenType::RightParen,   literal: LoxType::Nil, line: self.line}),
-                b'{' => tokens.push(Token{r#type: TokenType::LeftBrace,    literal: LoxType::Nil, line: self.line}),
-                b'}' => tokens.push(Token{r#type: TokenType::RightBrace,   literal: LoxType::Nil, line: self.line}),
-                b',' => tokens.push(Token{r#type: TokenType::Comma,         literal: LoxType::Nil, line: self.line}),
-                b'.' => tokens.push(Token{r#type: TokenType::Dot,           literal: LoxType::Nil, line: self.line}),
-                b'-' => tokens.push(Token{r#type: TokenType::Minus,         literal: LoxType::Nil, line: self.line}),
-                b'+' => tokens.push(Token{r#type: TokenType::Plus,          literal: LoxType::Nil, line: self.line}),
-                b';' => tokens.push(Token{r#type: TokenType::Semicolon,     literal: LoxType::Nil, line: self.line}),
-                b'*' => tokens.push(Token{r#type: TokenType::Star,          literal: LoxType::Nil, line: self.line}),
+                b'(' => tokens.push(Token{r#type: TokenType::LeftParen,     lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b')' => tokens.push(Token{r#type: TokenType::RightParen,    lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'{' => tokens.push(Token{r#type: TokenType::LeftBrace,     lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'}' => tokens.push(Token{r#type: TokenType::RightBrace,    lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b',' => tokens.push(Token{r#type: TokenType::Comma,         lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'.' => tokens.push(Token{r#type: TokenType::Dot,           lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'-' => tokens.push(Token{r#type: TokenType::Minus,         lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'+' => tokens.push(Token{r#type: TokenType::Plus,          lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b';' => tokens.push(Token{r#type: TokenType::Semicolon,     lexeme: None, literal: LoxType::Nil, line: self.line}),
+                b'*' => tokens.push(Token{r#type: TokenType::Star,          lexeme: None, literal: LoxType::Nil, line: self.line}),
 
                 b'!' => {
                     let token_type = if self.matching(b'=') {
@@ -37,7 +37,7 @@ impl Scanner {
                     } else {
                         TokenType::Bang
                     };
-                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                    tokens.push(Token{r#type: token_type, lexeme: None, literal: LoxType::Nil, line: self.line});
                 }
                 b'=' => {
                     let token_type = if self.matching(b'=') {
@@ -45,7 +45,7 @@ impl Scanner {
                     } else {
                         TokenType::Equal
                     };
-                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                    tokens.push(Token{r#type: token_type, lexeme: None, literal: LoxType::Nil, line: self.line});
                 }
                 b'<' => {
                     let token_type = if self.matching(b'=') {
@@ -53,7 +53,7 @@ impl Scanner {
                     } else {
                         TokenType::Less
                     };
-                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                    tokens.push(Token{r#type: token_type, lexeme: None, literal: LoxType::Nil, line: self.line});
                 }
                 b'>' => {
                     let token_type = if self.matching(b'=') {
@@ -61,7 +61,7 @@ impl Scanner {
                     } else {
                         TokenType::Greater
                     };
-                    tokens.push(Token{r#type: token_type, literal: LoxType::Nil, line: self.line});
+                    tokens.push(Token{r#type: token_type, lexeme: None, literal: LoxType::Nil, line: self.line});
                 }
                 b'/' => {
                     if self.matching(b'/') {
@@ -69,7 +69,7 @@ impl Scanner {
                             self.advance();
                         }
                     } else {
-                        tokens.push(Token{r#type: TokenType::Slash, literal: LoxType::Nil, line: self.line});
+                        tokens.push(Token{r#type: TokenType::Slash, lexeme: None, literal: LoxType::Nil, line: self.line});
                     }
                 }
 
@@ -80,7 +80,7 @@ impl Scanner {
 
                 b'"' => {
                     match self.string() {
-                        Ok(str) => tokens.push(Token{r#type: TokenType::String, literal: str, line: self.line}),
+                        Ok(str) => tokens.push(Token{r#type: TokenType::String, lexeme: None, literal: str, line: self.line}),
                         Err(e) => {
                             is_error = true;
                             errors.push(e);
@@ -91,7 +91,7 @@ impl Scanner {
                 _ => {
                     if self.is_digit(byte) {
                         match self.number() {
-                            Ok(num) => tokens.push(Token{r#type: TokenType::Number, literal: num, line: self.line}),
+                            Ok(num) => tokens.push(Token{r#type: TokenType::Number, lexeme: None, literal: num, line: self.line}),
                             Err(e) => {
                                 is_error = true;
                                 errors.push(e);
@@ -99,8 +99,8 @@ impl Scanner {
                         }
                     } else if self.is_alpha(byte) {
                         match self.identifier() {
-                            Ok((token_type, lox_type)) => {
-                                tokens.push(Token{r#type: token_type, literal: lox_type, line: self.line});
+                            Ok((token_type, id, lox_type)) => {
+                                tokens.push(Token{r#type: token_type, lexeme: Some(id), literal: lox_type, line: self.line});
                             }
                             Err(e) => {
                                 is_error = true;
@@ -121,6 +121,7 @@ impl Scanner {
 
         tokens.push(Token {
             r#type: TokenType::Eof,
+            lexeme: None,
             literal: LoxType::Nil,
             line: self.line
         });
@@ -213,7 +214,7 @@ impl Scanner {
         }
     }
 
-    fn identifier<'a>(&mut self) -> Result<(TokenType, LoxType), LoxError> {
+    fn identifier<'a>(&mut self) -> Result<(TokenType, String, LoxType), LoxError> {
         let start_index = self.current - 1;
         while self.is_alpha_numeric(self.peek()) {
             self.advance();
@@ -221,24 +222,24 @@ impl Scanner {
 
         let id = String::from_utf8(self.source[start_index..self.current].to_vec()).unwrap();
         match id.as_str() {
-            "and"       =>    Ok((TokenType::And, LoxType::Nil)),
-            "class"     =>    Ok((TokenType::Class, LoxType::Nil)),
-            "else"      =>    Ok((TokenType::Else, LoxType::Nil)),
-            "false"     =>    Ok((TokenType::False, LoxType::Nil)),
-            "for"       =>    Ok((TokenType::For, LoxType::Nil)),
-            "fun"       =>    Ok((TokenType::Fun, LoxType::Nil)),
-            "if"        =>    Ok((TokenType::If, LoxType::Nil)),
-            "nil"       =>    Ok((TokenType::Nil, LoxType::Nil)),
-            "or"        =>    Ok((TokenType::Or, LoxType::Nil)),
-            "print"     =>    Ok((TokenType::Print, LoxType::Nil)),
-            "return"    =>    Ok((TokenType::Return, LoxType::Nil)),
-            "super"     =>    Ok((TokenType::Super, LoxType::Nil)),
-            "this"      =>    Ok((TokenType::This, LoxType::Nil)),
-            "true"      =>    Ok((TokenType::True, LoxType::Nil)),
-            "var"       =>    Ok((TokenType::Var, LoxType::Nil)),
-            "while"     =>    Ok((TokenType::While, LoxType::Nil)),
+            "and"       =>    Ok((TokenType::And, id, LoxType::Nil)),
+            "class"     =>    Ok((TokenType::Class, id, LoxType::Nil)),
+            "else"      =>    Ok((TokenType::Else, id, LoxType::Nil)),
+            "false"     =>    Ok((TokenType::False, id, LoxType::Nil)),
+            "for"       =>    Ok((TokenType::For, id, LoxType::Nil)),
+            "fun"       =>    Ok((TokenType::Fun, id, LoxType::Nil)),
+            "if"        =>    Ok((TokenType::If, id, LoxType::Nil)),
+            "nil"       =>    Ok((TokenType::Nil, id, LoxType::Nil)),
+            "or"        =>    Ok((TokenType::Or, id, LoxType::Nil)),
+            "print"     =>    Ok((TokenType::Print, id, LoxType::Nil)),
+            "return"    =>    Ok((TokenType::Return, id, LoxType::Nil)),
+            "super"     =>    Ok((TokenType::Super, id, LoxType::Nil)),
+            "this"      =>    Ok((TokenType::This, id, LoxType::Nil)),
+            "true"      =>    Ok((TokenType::True, id, LoxType::Nil)),
+            "var"       =>    Ok((TokenType::Var, id, LoxType::Nil)),
+            "while"     =>    Ok((TokenType::While, id, LoxType::Nil)),
             _ => {
-                Ok((TokenType::Identifier, LoxType::Id(id)))
+                Ok((TokenType::Identifier, id.clone(), LoxType::Id(id)))
             }
         }
     }

@@ -38,7 +38,7 @@ fn run(source: Vec<u8>) {
     };
     // println!("{:#?}", ast);
 
-    let mut interpreter = Interpreter;
+    let mut interpreter = Interpreter::new();
     match interpreter.interpret(ast) {
         Ok(_) => (),
         Err(e) => {

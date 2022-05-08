@@ -27,6 +27,30 @@ impl Parser {
         Ok(statements)
     }
 
+    fn declaration(&mut self) -> Result<Stmt, LoxError> {
+        if self.matches(&[TokenType::Var]) {
+            return self.var_declaration();
+        }
+
+        self.statements()
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
+        let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+
+        let mut initializer: Option<Expr> = None;
+
+        if self.matches(&[TokenType::Equal]) {
+            initializer = match self.expression() {
+                Ok(expr) => Some(expr),
+                Err(e) => return Err(e)
+            };
+        }
+
+        self.consume(TokenType::Semicolon, "Expect ';' after variable declaration.")?;
+        Ok(Stmt::Var { name, initializer })
+    }
+
     #[inline]
     fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
@@ -45,7 +69,7 @@ impl Parser {
             Ok(expr) => expr,
             Err(e) => return Err(e)
         };
-        self.consume(&TokenType::Semicolon, "Expect ';' after value.");
+        self.consume(TokenType::Semicolon, "Expect ';' after value.");
         Ok(Stmt::Print { expression: expr })
     }
 
@@ -54,7 +78,7 @@ impl Parser {
             Ok(expr) => expr,
             Err(e) => return Err(e)
         };
-        self.consume(&TokenType::Semicolon, "Expect ';' after expression.");
+        self.consume(TokenType::Semicolon, "Expect ';' after expression.");
         Ok(Stmt::Expression { expression: expr })
     }
 
@@ -184,6 +208,12 @@ impl Parser {
             });
         }
 
+        if self.matches(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable { 
+                name: self.previous()
+            });
+        }
+
         if self.matches(&[TokenType::String, TokenType::Number]) {
             let literal = self.previous().literal;
             if let LoxType::String(str) = literal {
@@ -203,7 +233,7 @@ impl Parser {
                 Ok(expr) => expr,
                 Err(e) => return Err(e)
             };
-            if let Err(e) = self.consume(&TokenType::RightParen, "Expect ')' after expression.") {
+            if let Err(e) = self.consume(TokenType::RightParen, "Expect ')' after expression.") {
                 return Err(e);
             };
             return Ok(Expr::Grouping {
@@ -213,7 +243,7 @@ impl Parser {
 
         Err(LoxError::ParseError {
             msg: "Expect expression.".into(),
-            line: self.previous().line
+            line: self.peek().line
         })
     }
 
@@ -244,7 +274,7 @@ impl Parser {
 
 impl Parser {
     fn matches(&mut self, types: &[TokenType]) -> bool {
-        for t in types {
+        for &t in types {
             if self.check(t) {
                 self.advance();
                 return true;
@@ -254,11 +284,11 @@ impl Parser {
         false
     }
 
-    fn check(&self, t: &TokenType) -> bool {
+    fn check(&self, t: TokenType) -> bool {
         if self.is_at_end() {
             return false;
         }
-        self.peek().r#type == *t
+        self.peek().r#type == t
     }
 
     #[inline]
@@ -283,7 +313,7 @@ impl Parser {
         self.previous()
     }
 
-    fn consume<'a>(&'a mut self, t: &TokenType, msg: &'a str) -> Result<Token, LoxError> {
+    fn consume<'a>(&'a mut self, t: TokenType, msg: &'a str) -> Result<Token, LoxError> {
         if self.check(t) {
             return Ok(self.advance());
         }
