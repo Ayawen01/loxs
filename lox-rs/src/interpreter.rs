@@ -56,8 +56,17 @@ impl Interpreter {
 }
 
 impl VisitorExpr<LoxValue> for Interpreter {
-    fn visit_assign_expr(&self, name: Token, value: Box<Expr>) -> Result<LoxValue, LoxError> {
-        todo!()
+    fn visit_assign_expr(&mut self, name: Token, value: Box<Expr>) -> Result<LoxValue, LoxError> {
+        let value = match self.evaluate(*value) {
+            Ok(value) => value,
+            Err(e) => return Err(e)
+        };
+        
+        if let Err(e) = self.environment.assign(name, value) {
+            Err(e)
+        } else {
+            Ok(LoxValue::Nil)
+        }
     }
 
     fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxValue, LoxError> {

@@ -19,9 +19,11 @@ impl Parser {
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements = Vec::new();
 
-        match self.statements() {
-            Ok(stmt) => statements.push(stmt),
-            Err(e) => return Err(e)
+        while !self.is_at_end() {
+            match self.declaration() {
+                Ok(stmt) => statements.push(stmt),
+                Err(e) => return Err(e)
+            }
         }
 
         Ok(statements)
@@ -53,7 +55,30 @@ impl Parser {
 
     #[inline]
     fn expression(&mut self) -> Result<Expr, LoxError> {
-        self.equality()
+        // self.equality()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expr, LoxError> {
+        let expr = match self.equality() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
+
+        if self.matches(&[TokenType::Equal]) {
+            let equals = self.previous();
+            let value = match self.assignment() {
+                Ok(expr) => expr,
+                Err(e) => return Err(e)
+            };
+
+            match expr {
+                Expr::Variable { name } => return Ok(Expr::Assign { name, value: Box::new(value) }),
+                _ => return Err(LoxError::ParseError { msg: "Invalid assignment target.".into(), line: equals.line })
+            }
+        }
+
+        Ok(expr)
     }
 
     fn statements(&mut self) -> Result<Stmt, LoxError> {

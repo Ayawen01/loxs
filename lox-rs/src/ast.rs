@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display};
 use crate::{token::Token, error::LoxError};
 
 pub trait VisitorExpr<R> {
-    fn visit_assign_expr(&self, name: Token, value: Box<Expr>) -> Result<R, LoxError>;
+    fn visit_assign_expr(&mut self, name: Token, value: Box<Expr>) -> Result<R, LoxError>;
     fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
     fn visit_call_expr(&self, callee: Box<Expr>, paren: Token, arguments: Vec<Expr>) -> Result<R, LoxError>;
     fn visit_get_expr(&self, object: Box<Expr>, name: Token) -> Result<R, LoxError>;

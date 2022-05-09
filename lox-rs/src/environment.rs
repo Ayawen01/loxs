@@ -23,4 +23,14 @@ impl Environment {
     pub fn define(&mut self, name: String, value: LoxValue) {
         self.values.insert(name, value);
     }
+
+    pub fn assign(&mut self, name: Token, value: LoxValue) -> Result<(), LoxError> {
+        let lexeme = name.lexeme.unwrap();
+        if self.values.contains_key(&lexeme) {
+            self.values.insert(lexeme, value);
+            Ok(())
+        } else {
+            Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", lexeme).into(), line: name.line })   
+        }
+    }   
 }
