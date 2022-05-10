@@ -95,20 +95,20 @@ pub enum LoxLiteral {
 }
 
 #[derive(Clone)]
-pub enum LoxValue {
+pub enum LoxObject {
     String(String),
     Number(f64),
     Bool(bool),
     Nil
 }
 
-impl Display for LoxValue {
+impl Display for LoxObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let r = match self {
-            LoxValue::String(_) => "string",
-            LoxValue::Number(_) => "number",
-            LoxValue::Bool(_) => "bool",
-            LoxValue::Nil => "nil",
+            LoxObject::String(_) => "string",
+            LoxObject::Number(_) => "number",
+            LoxObject::Bool(_) => "bool",
+            LoxObject::Nil => "nil",
         };
         write!(f, "{}", r)
     }

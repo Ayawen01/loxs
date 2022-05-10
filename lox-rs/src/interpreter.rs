@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast::{VisitorExpr, Expr, LoxValue, LoxLiteral, VisitorStmt, Stmt},
+    ast::{VisitorExpr, Expr, LoxObject, LoxLiteral, VisitorStmt, Stmt},
     error::LoxError,
     token::{Token, TokenType}, environment::Environment,
 };
 
 pub struct Interpreter {
-    values: HashMap<String, LoxValue>,
+    values: HashMap<String, LoxObject>,
     environment: Environment
 }
 
@@ -25,38 +25,38 @@ impl Interpreter {
     }
     
     #[inline]
-    fn is_truthy(&self, value: &LoxValue) -> bool {
+    fn is_truthy(&self, value: &LoxObject) -> bool {
         match value {
-            LoxValue::Nil => false,
-            LoxValue::Bool(bool) => *bool,
+            LoxObject::Nil => false,
+            LoxObject::Bool(bool) => *bool,
             _ => true        
         }
     }
 
     #[inline]
-    fn is_equal(&self, l: &LoxValue, r: &LoxValue) -> bool {
+    fn is_equal(&self, l: &LoxObject, r: &LoxObject) -> bool {
         match (l, r) {
-            (LoxValue::Nil, LoxValue::Nil) => true,
-            (LoxValue::Bool(l), LoxValue::Bool(r)) => l == r,
-            (LoxValue::String(l), LoxValue::String(r)) => l == r,
-            (LoxValue::Number(l), LoxValue::Number(r)) => l == r,
+            (LoxObject::Nil, LoxObject::Nil) => true,
+            (LoxObject::Bool(l), LoxObject::Bool(r)) => l == r,
+            (LoxObject::String(l), LoxObject::String(r)) => l == r,
+            (LoxObject::Number(l), LoxObject::Number(r)) => l == r,
             _ => false
         }
     }
 
     #[inline]
-    fn stringify(&self, value: LoxValue) -> String {
+    fn stringify(&self, value: LoxObject) -> String {
         match value {
-            LoxValue::String(str) => str,
-            LoxValue::Number(num) => num.to_string(),
-            LoxValue::Bool(bool) => bool.to_string(),
-            LoxValue::Nil => "nil".to_owned()
+            LoxObject::String(str) => str,
+            LoxObject::Number(num) => num.to_string(),
+            LoxObject::Bool(bool) => bool.to_string(),
+            LoxObject::Nil => "nil".to_owned()
         }
     }
 }
 
-impl VisitorExpr<LoxValue> for Interpreter {
-    fn visit_assign_expr(&mut self, name: Token, value: Box<Expr>) -> Result<LoxValue, LoxError> {
+impl VisitorExpr<LoxObject> for Interpreter {
+    fn visit_assign_expr(&mut self, name: Token, value: Box<Expr>) -> Result<LoxObject, LoxError> {
         let value = match self.evaluate(*value) {
             Ok(value) => value,
             Err(e) => return Err(e)
@@ -65,11 +65,11 @@ impl VisitorExpr<LoxValue> for Interpreter {
         if let Err(e) = self.environment.assign(name, value) {
             Err(e)
         } else {
-            Ok(LoxValue::Nil)
+            Ok(LoxObject::Nil)
         }
     }
 
-    fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
         let left = match self.evaluate(*left) {
             Ok(expr) => expr,
             Err(e) => return Err(e)
@@ -80,43 +80,43 @@ impl VisitorExpr<LoxValue> for Interpreter {
         };
         
         match operator.r#type {
-            TokenType::BangEqual => Ok(LoxValue::Bool(!self.is_equal(&left, &right))),
-            TokenType::EqualEqual => Ok(LoxValue::Bool(self.is_equal(&left, &right))),
+            TokenType::BangEqual => Ok(LoxObject::Bool(!self.is_equal(&left, &right))),
+            TokenType::EqualEqual => Ok(LoxObject::Bool(self.is_equal(&left, &right))),
             TokenType::Greater => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Bool(l > r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Bool(l > r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::GreaterEqual => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Bool(l >= r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Bool(l >= r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::Less => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Bool(l < r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Bool(l < r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::LessEqual => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Bool(l <= r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Bool(l <= r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             },
             TokenType::Minus => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Number(l - r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Number(l - r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
@@ -124,8 +124,8 @@ impl VisitorExpr<LoxValue> for Interpreter {
             }
             TokenType::Plus => {
                 match (left.clone(), right.clone()) {
-                    (LoxValue::Number(l), LoxValue::Number(r)) => Ok(LoxValue::Number(l + r)),
-                    (LoxValue::String(l), LoxValue::String(r)) => Ok(LoxValue::String(l + &r)),
+                    (LoxObject::Number(l), LoxObject::Number(r)) => Ok(LoxObject::Number(l + r)),
+                    (LoxObject::String(l), LoxObject::String(r)) => Ok(LoxObject::String(l + &r)),
                     _ => {
                         let msg = format!("{} and {} must both be numbers or both be strings.", left, right);
                         Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
@@ -133,85 +133,85 @@ impl VisitorExpr<LoxValue> for Interpreter {
                 }
             }
             TokenType::Slash => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Number(l / r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Number(l / r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             }
             TokenType::Star => {
-                if let (LoxValue::Number(l), LoxValue::Number(r)) = (left.clone(), right.clone()) {
-                    Ok(LoxValue::Number(l * r))
+                if let (LoxObject::Number(l), LoxObject::Number(r)) = (left.clone(), right.clone()) {
+                    Ok(LoxObject::Number(l * r))
                 } else {
                     let msg = format!("{} and {} must be numbers.", left, right);
                     Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line })
                 }
             }
             _ => {
-                Ok(LoxValue::Nil)
+                Ok(LoxObject::Nil)
             }
         }
     }
 
-    fn visit_call_expr(&self, callee: Box<Expr>, paren: Token, arguments: Vec<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_call_expr(&self, callee: Box<Expr>, paren: Token, arguments: Vec<Expr>) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_get_expr(&self, object: Box<Expr>, name: Token) -> Result<LoxValue, LoxError> {
+    fn visit_get_expr(&self, object: Box<Expr>, name: Token) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_grouping_expr(&mut self, expression: Box<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_grouping_expr(&mut self, expression: Box<Expr>) -> Result<LoxObject, LoxError> {
         self.evaluate(*expression)
     }
 
-    fn visit_literal_expr(&self, value: LoxLiteral) -> Result<LoxValue, LoxError> {
+    fn visit_literal_expr(&self, value: LoxLiteral) -> Result<LoxObject, LoxError> {
         Ok(match value {
-            LoxLiteral::String(str) => LoxValue::String(str),
-            LoxLiteral::Number(num) => LoxValue::Number(num),
-            LoxLiteral::Bool(bool) => LoxValue::Bool(bool),
-            LoxLiteral::Nil => LoxValue::Nil
+            LoxLiteral::String(str) => LoxObject::String(str),
+            LoxLiteral::Number(num) => LoxObject::Number(num),
+            LoxLiteral::Bool(bool) => LoxObject::Bool(bool),
+            LoxLiteral::Nil => LoxObject::Nil
         })
     }
 
-    fn visit_logical_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_logical_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_set_expr(&self, object: Box<Expr>, name: Token, value: Box<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_set_expr(&self, object: Box<Expr>, name: Token, value: Box<Expr>) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_super_expr(&self, keyword: Token, method: Token) -> Result<LoxValue, LoxError> {
+    fn visit_super_expr(&self, keyword: Token, method: Token) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_this_expr(&self, keyword: Token) -> Result<LoxValue, LoxError> {
+    fn visit_this_expr(&self, keyword: Token) -> Result<LoxObject, LoxError> {
         todo!()
     }
 
-    fn visit_unary_expr(&mut self, operator: Token, right: Box<Expr>) -> Result<LoxValue, LoxError> {
+    fn visit_unary_expr(&mut self, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
         let right = match self.evaluate(*right) {
             Ok(expr) => expr,
             Err(e) => return Err(e)
         };
         
         Ok(match operator.r#type {
-            TokenType::Bang => LoxValue::Bool(!self.is_truthy(&right)),
+            TokenType::Bang => LoxObject::Bool(!self.is_truthy(&right)),
             TokenType::Minus => {
-                if let LoxValue::Number(num) = right {
-                    LoxValue::Number(-num)
+                if let LoxObject::Number(num) = right {
+                    LoxObject::Number(-num)
                 } else {
                     let msg = format!("{} must be a number.", right);
                     return Err(LoxError::RuntimeError { msg: msg.into(), line: operator.line });
                 }
             }
-            _ => LoxValue::Nil
+            _ => LoxObject::Nil
         })
     }
 
-    fn visit_variable_expr(&mut self, name: Token) -> Result<LoxValue, LoxError> {
+    fn visit_variable_expr(&mut self, name: Token) -> Result<LoxObject, LoxError> {
         self.environment.get(name)
     }
 }
