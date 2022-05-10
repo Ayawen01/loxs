@@ -59,11 +59,7 @@ impl VisitorExpr<LoxObject> for Interpreter {
             Err(e) => return Err(e)
         };
         
-        if let Err(e) = self.environment.assign(name, value) {
-            Err(e)
-        } else {
-            Ok(LoxObject::Nil)
-        }
+        self.environment.assign(name, value)
     }
 
     fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
@@ -214,11 +210,11 @@ impl VisitorExpr<LoxObject> for Interpreter {
 }
 
 impl VisitorStmt<()> for Interpreter {
-    fn visit_block_stmt(&self, statements: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+    fn visit_block_stmt(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         todo!()
     }
 
-    fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+    fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<Stmt>) -> Result<(), LoxError> {
         todo!()
     }
 
@@ -229,11 +225,11 @@ impl VisitorStmt<()> for Interpreter {
         }
     }
 
-    fn visit_function_stmt(&self, name: Token, params: Vec<Token>, body: Vec<crate::ast::Stmt>) -> Result<(), LoxError> {
+    fn visit_function_stmt(&self, name: Token, params: Vec<Token>, body: Vec<Stmt>) -> Result<(), LoxError> {
         todo!()
     }
 
-    fn visit_if_stmt(&self, condition: Expr, then_branch: Box<crate::ast::Stmt>, else_branch: Option<Box<crate::ast::Stmt>>) -> Result<(), LoxError> {
+    fn visit_if_stmt(&self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<(), LoxError> {
         todo!()
     }
 
@@ -261,7 +257,7 @@ impl VisitorStmt<()> for Interpreter {
         Ok(())
     }
 
-    fn visit_while_stmt(&self, condition: Expr, body: Box<crate::ast::Stmt>) -> Result<(), LoxError> {
+    fn visit_while_stmt(&self, condition: Expr, body: Box<Stmt>) -> Result<(), LoxError> {
         todo!()
     }
 }
