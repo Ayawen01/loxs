@@ -55,7 +55,6 @@ impl Parser {
 
     #[inline]
     fn expression(&mut self) -> Result<Expr, LoxError> {
-        // self.equality()
         self.assignment()
     }
 
@@ -94,7 +93,7 @@ impl Parser {
             Ok(expr) => expr,
             Err(e) => return Err(e)
         };
-        self.consume(TokenType::Semicolon, "Expect ';' after value.");
+        self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
         Ok(Stmt::Print { expression: expr })
     }
 
@@ -103,7 +102,7 @@ impl Parser {
             Ok(expr) => expr,
             Err(e) => return Err(e)
         };
-        self.consume(TokenType::Semicolon, "Expect ';' after expression.");
+        self.consume(TokenType::Semicolon, "Expect ';' after expression.")?;
         Ok(Stmt::Expression { expression: expr })
     }
 

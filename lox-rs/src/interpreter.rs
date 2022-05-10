@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     ast::{VisitorExpr, Expr, LoxObject, LoxLiteral, VisitorStmt, Stmt},
     error::LoxError,
@@ -7,13 +5,12 @@ use crate::{
 };
 
 pub struct Interpreter {
-    values: HashMap<String, LoxObject>,
     environment: Environment
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter { values: HashMap::new(), environment: Environment::new() }
+        Interpreter { environment: Environment::new() }
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
