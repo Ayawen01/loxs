@@ -50,6 +50,20 @@ impl Interpreter {
             LoxObject::Nil => "nil".to_owned()
         }
     }
+
+    fn execute_block(&mut self, statements: Vec<Stmt>, environment: Environment) -> Result<(), LoxError> {
+        let previous = self.environment.clone();
+
+        self.environment = environment;
+
+        for stmt in statements {
+            self.execute(stmt)?;
+        }
+
+        self.environment = previous;
+
+        Ok(())
+    }
 }
 
 impl VisitorExpr<LoxObject> for Interpreter {
@@ -210,8 +224,8 @@ impl VisitorExpr<LoxObject> for Interpreter {
 }
 
 impl VisitorStmt<()> for Interpreter {
-    fn visit_block_stmt(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
-        todo!()
+    fn visit_block_stmt(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
+        self.execute_block(statements, self.environment.clone())
     }
 
     fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<Stmt>) -> Result<(), LoxError> {

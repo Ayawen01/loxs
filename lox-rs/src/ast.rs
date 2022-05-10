@@ -115,7 +115,7 @@ impl Display for LoxObject {
 }
 
 pub trait VisitorStmt<R> {
-    fn visit_block_stmt(&self, statements: Vec<Stmt>) -> Result<R, LoxError>;
+    fn visit_block_stmt(&mut self, statements: Vec<Stmt>) -> Result<R, LoxError>;
     fn visit_class_stmt(&self, name: Token, superclass: Option<Expr>, methods: Vec<Stmt>) -> Result<R, LoxError>;
     fn visit_expression_stmt(&mut self, expression: Expr) -> Result<R, LoxError>;
     fn visit_function_stmt(&self, name: Token, params: Vec<Token>, body: Vec<Stmt>) -> Result<R, LoxError>;

@@ -2,21 +2,31 @@ use std::collections::HashMap;
 
 use crate::{ast::LoxObject, error::LoxError, token::Token};
 
+#[derive(Clone)]
 pub struct Environment {
-    values: HashMap<String, LoxObject>
+    values: HashMap<String, LoxObject>,
+    environment: Option<Box<Environment>>
 }
 
 impl Environment {
     pub fn new() -> Environment {
-        Environment { values: HashMap::new() }
+        Environment { values: HashMap::new(), environment: None }
+    }
+
+    pub fn from(&mut self, environment: Environment) {
+        self.environment = Some(Box::new(environment));
     }
 
     pub fn get(&self, name: Token) -> Result<LoxObject, LoxError> {
-        let lexeme = name.lexeme.unwrap();
+        let lexeme = name.clone().lexeme.unwrap();
         if self.values.contains_key(&lexeme) {
             Ok(self.values.get(&lexeme).unwrap().clone())
         } else {
-            Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", &lexeme).into(), line: name.line })
+            if let Some(environment) = &self.environment {
+                environment.get(name)
+            } else {
+                Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", &lexeme).into(), line: name.line })
+            }
         }
     }
 
@@ -25,11 +35,15 @@ impl Environment {
     }
 
     pub fn assign(&mut self, name: Token, value: LoxObject) -> Result<LoxObject, LoxError> {
-        let lexeme = name.lexeme.unwrap();
+        let lexeme = name.clone().lexeme.unwrap();
         if self.values.contains_key(&lexeme) {
             Ok(self.values.insert(lexeme, value).unwrap())
         } else {
-            Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", lexeme).into(), line: name.line })   
+            if let Some(environment) = &mut self.environment {
+                environment.assign(name, value)
+            } else {
+                Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", lexeme).into(), line: name.line })   
+            }
         }
     }   
 }
