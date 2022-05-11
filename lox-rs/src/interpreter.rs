@@ -72,22 +72,13 @@ impl Interpreter {
 
 impl VisitorExpr<LoxObject> for Interpreter {
     fn visit_assign_expr(&mut self, name: Token, value: Box<Expr>) -> Result<LoxObject, LoxError> {
-        let value = match self.evaluate(*value) {
-            Ok(value) => value,
-            Err(e) => return Err(e)
-        };
+        let value = self.evaluate(*value)?;
         self.environment.borrow_mut().assign(name, value)
     }
 
     fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
-        let left = match self.evaluate(*left) {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
-        let right = match self.evaluate(*right) {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let left = self.evaluate(*left)?;
+        let right = self.evaluate(*right)?;
         
         match operator.r#type {
             TokenType::BangEqual => Ok(LoxObject::Bool(!self.is_equal(&left, &right))),
@@ -187,8 +178,20 @@ impl VisitorExpr<LoxObject> for Interpreter {
         })
     }
 
-    fn visit_logical_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
-        todo!()
+    fn visit_logical_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
+        let left = self.evaluate(*left)?;
+
+        if operator.r#type == TokenType::Or {
+            if self.is_truthy(&left) {
+                return Ok(left);
+            }
+        } else {
+            if !self.is_truthy(&left) {
+                return Ok(left);
+            }
+        }
+
+        self.evaluate(*right)
     }
 
     fn visit_set_expr(&self, object: Box<Expr>, name: Token, value: Box<Expr>) -> Result<LoxObject, LoxError> {
@@ -204,10 +207,7 @@ impl VisitorExpr<LoxObject> for Interpreter {
     }
 
     fn visit_unary_expr(&mut self, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
-        let right = match self.evaluate(*right) {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let right = self.evaluate(*right)?;
         
         Ok(match operator.r#type {
             TokenType::Bang => LoxObject::Bool(!self.is_truthy(&right)),
@@ -252,10 +252,7 @@ impl VisitorStmt<()> for Interpreter {
     }
 
     fn visit_if_stmt(&mut self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<(), LoxError> {
-        let v = match self.evaluate(condition) {
-            Ok(v) => v,
-            Err(e) => return Err(e)
-        };
+        let v = self.evaluate(condition)?;
         if self.is_truthy(&v) {
             self.execute(*then_branch)?;
         } else if let Some(else_branch) = else_branch {

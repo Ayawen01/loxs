@@ -59,17 +59,11 @@ impl Parser {
     }
 
     fn assignment(&mut self) -> Result<Expr, LoxError> {
-        let expr = match self.equality() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let expr = self.or()?;
 
         if self.matches(&[TokenType::Equal]) {
             let equals = self.previous();
-            let value = match self.assignment() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let value = self.assignment()?;
 
             match expr {
                 Expr::Variable { name } => return Ok(Expr::Assign { name, value: Box::new(value) }),
@@ -77,6 +71,30 @@ impl Parser {
             }
         }
 
+        Ok(expr)
+    }
+
+    fn or(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.and()?;
+
+        while self.matches(&[TokenType::Or]) {
+            let operator = self.previous();
+            let right = self.and()?;
+            expr = Expr::Logical { left: Box::new(expr), operator, right: Box::new(right) }
+        }
+        
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.equality()?;
+
+        while self.matches(&[TokenType::And]) {
+            let operator = self.previous();
+            let right = self.equality()?;
+            expr = Expr::Logical { left: Box::new(expr), operator, right: Box::new(right) }
+        }
+        
         Ok(expr)
     }
 
@@ -88,10 +106,7 @@ impl Parser {
             self.print_statement()
         }
         else if self.matches(&[TokenType::LeftBrace]) {
-            let statements = match self.block() {
-                Ok(statements) => statements,
-                Err(e) => return Err(e)
-            };
+            let statements = self.block()?;
             Ok(Stmt::Block { statements })
         }
         else {
@@ -101,16 +116,10 @@ impl Parser {
 
     fn if_statement(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
-        let condition = match self.expression() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let condition = self.expression()?;
         self.consume(TokenType::RightParen, "Expect ')' after if condition.")?;
 
-        let then_branch = match self.statements() {
-            Ok(stmt) => Box::new(stmt),
-            Err(e) => return Err(e)
-        };
+        let then_branch = Box::new(self.statements()?);
         
         let mut else_branch: Option<Box<Stmt>> = None;
         if self.matches(&[TokenType::Else]) {
@@ -136,35 +145,23 @@ impl Parser {
     }
 
     fn print_statement(&mut self) -> Result<Stmt, LoxError> {
-        let expr = match self.expression() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect ';' after value.")?;
         Ok(Stmt::Print { expression: expr })
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
-        let expr = match self.expression() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let expr = self.expression()?;
         self.consume(TokenType::Semicolon, "Expect ';' after expression.")?;
         Ok(Stmt::Expression { expression: expr })
     }
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = match self.comparison() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let mut expr = self.comparison()?;
 
         while self.matches(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
-            let right = match self.comparison() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let right = self.comparison()?;
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
@@ -176,10 +173,7 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = match self.term() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let mut expr = self.term()?;
 
         while self.matches(&[
             TokenType::Greater,
@@ -188,10 +182,7 @@ impl Parser {
             TokenType::LessEqual
         ]) {
             let operator = self.previous();
-            let right = match self.term() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let right = self.term()?;
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
@@ -203,17 +194,11 @@ impl Parser {
     }
 
     fn term(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = match self.factor() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let mut expr = self.factor()?;
 
         while self.matches(&[TokenType::Minus, TokenType::Plus]) {
             let operator = self.previous();
-            let right = match self.factor() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let right = self.factor()?;
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
@@ -225,17 +210,11 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Result<Expr, LoxError> {
-        let mut expr = match self.unary() {
-            Ok(expr) => expr,
-            Err(e) => return Err(e)
-        };
+        let mut expr = self.unary()?;
 
         while self.matches(&[TokenType::Slash, TokenType::Star]) {
             let operator = self.previous();
-            let right = match self.unary() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let right = self.unary()?;
             expr = Expr::Binary {
                 left: Box::new(expr),
                 operator,
@@ -249,10 +228,7 @@ impl Parser {
     fn unary(&mut self) -> Result<Expr, LoxError> {
         if self.matches(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous();
-            let right = match self.unary() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let right = self.unary()?;
             return Ok(Expr::Unary {
                 operator,
                 right: Box::new(right)
@@ -300,10 +276,7 @@ impl Parser {
         }
 
         if self.matches(&[TokenType::LeftParen]) {
-            let expr = match self.expression() {
-                Ok(expr) => expr,
-                Err(e) => return Err(e)
-            };
+            let expr = self.expression()?;
             if let Err(e) = self.consume(TokenType::RightParen, "Expect ')' after expression.") {
                 return Err(e);
             };

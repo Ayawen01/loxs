@@ -9,7 +9,7 @@ pub trait VisitorExpr<R> {
     fn visit_get_expr(&self, object: Box<Expr>, name: Token) -> Result<R, LoxError>;
     fn visit_grouping_expr(&mut self, expression: Box<Expr>) -> Result<R, LoxError>;
     fn visit_literal_expr(&self, value: LoxLiteral) -> Result<R, LoxError>;
-    fn visit_logical_expr(&self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
+    fn visit_logical_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<R, LoxError>;
     fn visit_set_expr(&self, object: Box<Expr>, name: Token, value: Box<Expr>) -> Result<R, LoxError>;
     fn visit_super_expr(&self, keyword: Token, method: Token) -> Result<R, LoxError>;
     fn visit_this_expr(&self, keyword: Token) -> Result<R, LoxError>;
