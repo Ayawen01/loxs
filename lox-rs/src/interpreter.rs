@@ -11,10 +11,12 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
+    #[inline]
     pub fn new() -> Interpreter {
         Interpreter { environment: Rc::new(RefCell::new(Environment::new())) }
     }
 
+    #[inline]
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for stmt in statements {
             self.execute(stmt)?;
@@ -170,10 +172,12 @@ impl VisitorExpr<LoxObject> for Interpreter {
         todo!()
     }
 
+    #[inline]
     fn visit_grouping_expr(&mut self, expression: Box<Expr>) -> Result<LoxObject, LoxError> {
         self.evaluate(*expression)
     }
 
+    #[inline]
     fn visit_literal_expr(&self, value: LoxLiteral) -> Result<LoxObject, LoxError> {
         Ok(match value {
             LoxLiteral::String(str) => LoxObject::String(str),
@@ -219,12 +223,14 @@ impl VisitorExpr<LoxObject> for Interpreter {
         })
     }
 
+    #[inline]
     fn visit_variable_expr(&mut self, name: Token) -> Result<LoxObject, LoxError> {
         self.environment.borrow().get(name)
     }
 }
 
 impl VisitorStmt<()> for Interpreter {
+    #[inline]
     fn visit_block_stmt(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         self.execute_block(statements, self.environment.clone())
     }
@@ -233,6 +239,7 @@ impl VisitorStmt<()> for Interpreter {
         todo!()
     }
 
+    #[inline]
     fn visit_expression_stmt(&mut self, expression: Expr) -> Result<(), LoxError> {
         match self.evaluate(expression) {
             Ok(_) => Ok(()),
@@ -257,12 +264,15 @@ impl VisitorStmt<()> for Interpreter {
         Ok(())
     }
 
+    #[inline]
     fn visit_print_stmt(&mut self, expression: Expr) -> Result<(), LoxError> {
         match self.evaluate(expression) {
-            Ok(expr) => println!("{}", self.stringify(expr)),
-            Err(e) => return Err(e)
-        };
-        Ok(())
+            Ok(expr) => {
+                println!("{}", self.stringify(expr));
+                Ok(())
+            }
+            Err(e) => Err(e)
+        }
     }
 
     fn visit_return_stmt(&self, keyword: Token, value: Option<Expr>) -> Result<(), LoxError> {
