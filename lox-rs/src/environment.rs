@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc, cell::RefCell};
 
 use crate::{ast::LoxObject, error::LoxError, token::Token};
 
 #[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, LoxObject>,
-    environment: Option<Box<Environment>>
+    environment: Option<Rc<RefCell<Environment>>>
 }
 
 impl Environment {
@@ -13,8 +13,8 @@ impl Environment {
         Environment { values: HashMap::new(), environment: None }
     }
 
-    pub fn from(&mut self, environment: Environment) {
-        self.environment = Some(Box::new(environment));
+    pub fn from(environment: Rc<RefCell<Environment>>) -> Environment {
+        Environment { values: HashMap::new(), environment: Some(environment) }
     }
 
     pub fn get(&self, name: Token) -> Result<LoxObject, LoxError> {
@@ -23,7 +23,7 @@ impl Environment {
             Ok(self.values.get(&lexeme).unwrap().clone())
         } else {
             if let Some(environment) = &self.environment {
-                environment.get(name)
+                environment.borrow().get(name)
             } else {
                 Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", &lexeme).into(), line: name.line })
             }
@@ -40,7 +40,7 @@ impl Environment {
             Ok(self.values.insert(lexeme, value).unwrap())
         } else {
             if let Some(environment) = &mut self.environment {
-                environment.assign(name, value)
+                environment.borrow_mut().assign(name, value)
             } else {
                 Err(LoxError::RuntimeError { msg: format!("Undefined variable '{}'.", lexeme).into(), line: name.line })   
             }

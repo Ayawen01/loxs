@@ -81,17 +81,46 @@ impl Parser {
     }
 
     fn statements(&mut self) -> Result<Stmt, LoxError> {
-        if self.matches(&[TokenType::Print]) {
+        if self.matches(&[TokenType::If]) {
+            self.if_statement()
+        }
+        else if self.matches(&[TokenType::Print]) {
             self.print_statement()
-        } else if self.matches(&[TokenType::LeftBrace]) {
+        }
+        else if self.matches(&[TokenType::LeftBrace]) {
             let statements = match self.block() {
                 Ok(statements) => statements,
                 Err(e) => return Err(e)
             };
             Ok(Stmt::Block { statements })
-        } else {
+        }
+        else {
             self.expression_statement()
         }
+    }
+
+    fn if_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
+        let condition = match self.expression() {
+            Ok(expr) => expr,
+            Err(e) => return Err(e)
+        };
+        self.consume(TokenType::RightParen, "Expect ')' after if condition.")?;
+
+        let then_branch = match self.statements() {
+            Ok(stmt) => Box::new(stmt),
+            Err(e) => return Err(e)
+        };
+        
+        let mut else_branch: Option<Box<Stmt>> = None;
+        if self.matches(&[TokenType::Else]) {
+            else_branch = match self.statements() {
+                Ok(stmt) => Some(Box::new(stmt)),
+                Err(e) => return Err(e)
+            };
+        }
+
+        Ok(Stmt::If { condition, then_branch, else_branch })
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {

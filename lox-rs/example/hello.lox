@@ -1,14 +1,37 @@
-// this is a comment
-(( )){} // grouping stuff
-!*+-/=<> <= == // operators
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;
 
-"hello lox";
-"a"
-""
+print "----------------------------------------------------------";
 
-114514
-114514.1919
-3.14;
+var state = true;
+print state;
+{
+    state = false;
+    if (state) {
+        print 114514;
+    } else {
+        print state;
+        state = 1919810;
+    }
+    print state;
+    state = !true;
+}
 
-var text = "hello lox";
-print text;
+print state;

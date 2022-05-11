@@ -1,3 +1,5 @@
+use std::{rc::Rc, cell::RefCell};
+
 use crate::{
     ast::{VisitorExpr, Expr, LoxObject, LoxLiteral, VisitorStmt, Stmt},
     error::LoxError,
@@ -5,12 +7,12 @@ use crate::{
 };
 
 pub struct Interpreter {
-    environment: Environment
+    environment: Rc<RefCell<Environment>>
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter { environment: Environment::new() }
+        Interpreter { environment: Rc::new(RefCell::new(Environment::new())) }
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
@@ -51,10 +53,10 @@ impl Interpreter {
         }
     }
 
-    fn execute_block(&mut self, statements: Vec<Stmt>, environment: Environment) -> Result<(), LoxError> {
-        let previous = self.environment.clone();
+    fn execute_block(&mut self, statements: Vec<Stmt>, environment: Rc<RefCell<Environment>>) -> Result<(), LoxError> {
+        let previous = environment.clone();
 
-        self.environment = environment;
+        self.environment = Rc::new(RefCell::new(Environment::from(environment)));
 
         for stmt in statements {
             self.execute(stmt)?;
@@ -72,8 +74,7 @@ impl VisitorExpr<LoxObject> for Interpreter {
             Ok(value) => value,
             Err(e) => return Err(e)
         };
-        
-        self.environment.assign(name, value)
+        self.environment.borrow_mut().assign(name, value)
     }
 
     fn visit_binary_expr(&mut self, left: Box<Expr>, operator: Token, right: Box<Expr>) -> Result<LoxObject, LoxError> {
@@ -219,7 +220,7 @@ impl VisitorExpr<LoxObject> for Interpreter {
     }
 
     fn visit_variable_expr(&mut self, name: Token) -> Result<LoxObject, LoxError> {
-        self.environment.get(name)
+        self.environment.borrow().get(name)
     }
 }
 
@@ -243,8 +244,17 @@ impl VisitorStmt<()> for Interpreter {
         todo!()
     }
 
-    fn visit_if_stmt(&self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<(), LoxError> {
-        todo!()
+    fn visit_if_stmt(&mut self, condition: Expr, then_branch: Box<Stmt>, else_branch: Option<Box<Stmt>>) -> Result<(), LoxError> {
+        let v = match self.evaluate(condition) {
+            Ok(v) => v,
+            Err(e) => return Err(e)
+        };
+        if self.is_truthy(&v) {
+            self.execute(*then_branch)?;
+        } else if let Some(else_branch) = else_branch {
+            self.execute(*else_branch)?;
+        }
+        Ok(())
     }
 
     fn visit_print_stmt(&mut self, expression: Expr) -> Result<(), LoxError> {
@@ -263,7 +273,7 @@ impl VisitorStmt<()> for Interpreter {
         if let Some(expr) = initializer {
             match self.evaluate(expr) {
                 Ok(v) => {
-                    self.environment.define(name.lexeme.unwrap(), v);
+                    self.environment.borrow_mut().define(name.lexeme.unwrap(), v);
                 }
                 Err(e) => return Err(e)
             };
