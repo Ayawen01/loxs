@@ -34,7 +34,7 @@ impl Parser {
             return self.var_declaration();
         }
 
-        self.statements()
+        self.statement()
     }
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
@@ -98,12 +98,15 @@ impl Parser {
         Ok(expr)
     }
 
-    fn statements(&mut self) -> Result<Stmt, LoxError> {
+    fn statement(&mut self) -> Result<Stmt, LoxError> {
         if self.matches(&[TokenType::If]) {
             self.if_statement()
         }
         else if self.matches(&[TokenType::Print]) {
             self.print_statement()
+        }
+        else if self.matches(&[TokenType::While]) {
+            self.while_statement()
         }
         else if self.matches(&[TokenType::LeftBrace]) {
             let statements = self.block()?;
@@ -114,16 +117,28 @@ impl Parser {
         }
     }
 
+    fn while_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'while'.")?;
+
+        let condition = self.expression()?;
+
+        self.consume(TokenType::RightParen, "Expect ')' after condition.")?;
+
+        let body = Box::new(self.statement()?);
+
+        Ok(Stmt::While { condition, body })
+    }
+
     fn if_statement(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
         let condition = self.expression()?;
         self.consume(TokenType::RightParen, "Expect ')' after if condition.")?;
 
-        let then_branch = Box::new(self.statements()?);
+        let then_branch = Box::new(self.statement()?);
         
         let mut else_branch: Option<Box<Stmt>> = None;
         if self.matches(&[TokenType::Else]) {
-            else_branch = match self.statements() {
+            else_branch = match self.statement() {
                 Ok(stmt) => Some(Box::new(stmt)),
                 Err(e) => return Err(e)
             };

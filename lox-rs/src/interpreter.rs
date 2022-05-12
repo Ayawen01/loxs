@@ -288,7 +288,17 @@ impl VisitorStmt<()> for Interpreter {
         Ok(())
     }
 
-    fn visit_while_stmt(&self, condition: Expr, body: Box<Stmt>) -> Result<(), LoxError> {
-        todo!()
+    fn visit_while_stmt(&mut self, condition: Expr, body: Box<Stmt>) -> Result<(), LoxError> {
+        loop {
+            let bool = self.evaluate(condition.clone())?;
+
+            if self.is_truthy(&bool) {
+                self.execute(*body.clone())?;
+            } else {
+                break
+            }
+        }
+
+        Ok(())
     }
 }

@@ -35,3 +35,23 @@ print state;
 }
 
 print state;
+
+var i = 0;
+
+while (i < 10) {
+  i = i + 1;
+  print i;
+}
+
+print "-----------------------------";
+
+var i = 0;
+var num = 0;
+
+while (i < 1000000) {
+  i = i + 1;
+  num = num + i;
+  //print i;
+}
+
+print num;

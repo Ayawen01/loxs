@@ -34,7 +34,7 @@ pub trait VisitorExpr<R> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Assign {
         name: Token,
@@ -86,7 +86,7 @@ pub enum Expr {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LoxLiteral {
     String(String),
     Number(f64),
@@ -123,7 +123,7 @@ pub trait VisitorStmt<R> {
     fn visit_print_stmt(&mut self, expression: Expr) -> Result<R, LoxError>;
     fn visit_return_stmt(&self, keyword: Token, value: Option<Expr>) -> Result<R, LoxError>;
     fn visit_var_stmt(&mut self, name: Token, initializer: Option<Expr>) -> Result<R, LoxError>;
-    fn visit_while_stmt(&self, condition: Expr, body: Box<Stmt>) -> Result<R, LoxError>;
+    fn visit_while_stmt(&mut self, condition: Expr, body: Box<Stmt>) -> Result<R, LoxError>;
 
     fn execute(&mut self, stmt: Stmt) -> Result<R, LoxError> {
         match stmt {
@@ -140,7 +140,7 @@ pub trait VisitorStmt<R> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Stmt {
     Block {
         statements: Vec<Stmt>
